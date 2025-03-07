@@ -10,5 +10,6 @@ namespace ChatApp.Data
             : base(options)
         {
         }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
     }
 }
