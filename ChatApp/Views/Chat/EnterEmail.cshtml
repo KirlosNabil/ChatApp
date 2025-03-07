@@ -1,0 +1,13 @@
+﻿@{
+    ViewData["Title"] = "Start Chat";
+}
+
+<h2>Enter the email of the user you want to chat with:</h2>
+
+<form asp-action="StartChat" method="post">
+    <div class="form-group">
+        <label for="receiverEmail">Email:</label>
+        <input type="email" class="form-control" id="receiverEmail" name="receiverEmail" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Start Chat</button>
+</form>

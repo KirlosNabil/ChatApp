@@ -1,50 +1,45 @@
-﻿using ChatApp.Data;
-using ChatApp.Models;
+﻿using ChatApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
-[Authorize]
-public class ChatController : Controller
+namespace ChatApp.Controllers
 {
-    private readonly ApplicationDbContext _context;
-    private readonly UserManager<User> _userManager;
-
-    public ChatController(ApplicationDbContext context, UserManager<User> userManager)
+    [Authorize]
+    public class ChatController : Controller
     {
-        _context = context;
-        _userManager = userManager;
-    }
+        private readonly UserManager<User> _userManager;
 
-    public async Task<IActionResult> Index()
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null)
+        public ChatController(UserManager<User> userManager)
         {
-            return RedirectToAction("Login", "Account");
+            _userManager = userManager;
         }
 
-        ViewBag.UserId = user.Id;
-        return View();
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> SendMessage(string receiverId, string message)
-    {
-        var senderId = _userManager.GetUserId(User);
-        var chatMessage = new ChatMessage
+        public IActionResult EnterEmail()
         {
-            SenderId = senderId,
-            ReceiverId = receiverId,
-            Message = message
-        };
+            return View();
+        }
 
-        _context.ChatMessages.Add(chatMessage);
-        await _context.SaveChangesAsync();
+        [HttpPost]
+        public async Task<IActionResult> StartChat(string receiverEmail)
+        {
+            var user = await _userManager.FindByEmailAsync(receiverEmail);
+            if (user == null)
+            {
+                ModelState.AddModelError("", "User not found.");
+                return View("EnterEmail");
+            }
+            return RedirectToAction("Index", new { userId = user.Id });
+        }
 
-        return RedirectToAction("Index", new { userId = receiverId });
+        public IActionResult Index(string userId)
+        {
+            ViewBag.ReceiverId = userId;
+
+            var messages = new List<ChatMessage>();
+            return View(messages);
+        }
     }
 }
