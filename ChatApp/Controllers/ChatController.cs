@@ -19,17 +19,16 @@ public class ChatController : Controller
         _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index(string userId)
+    public async Task<IActionResult> Index()
     {
-        var currentUserId = _userManager.GetUserId(User);
-        var messages = await _context.ChatMessages
-            .Where(m => (m.SenderId == currentUserId && m.ReceiverId == userId) ||
-                        (m.SenderId == userId && m.ReceiverId == currentUserId))
-            .OrderBy(m => m.Date)
-            .ToListAsync();
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
 
-        ViewBag.ReceiverId = userId;
-        return View(messages);
+        ViewBag.UserId = user.Id;
+        return View();
     }
 
     [HttpPost]

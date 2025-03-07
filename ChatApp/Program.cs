@@ -1,4 +1,4 @@
-using ChatApp.Data;
+﻿using ChatApp.Data;
 using ChatApp.Hubs;
 using ChatApp.Models;
 using Microsoft.AspNetCore.Identity;
@@ -19,12 +19,17 @@ namespace ChatApp
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            builder.Services.AddIdentity<User, IdentityRole>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = true;
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders()
+            .AddDefaultUI();
 
             builder.Services.AddSignalR();
-
             builder.Services.AddControllersWithViews();
+            builder.Services.AddRazorPages();
 
             var app = builder.Build();
 
@@ -40,7 +45,6 @@ namespace ChatApp
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
 
             app.UseAuthentication();
@@ -48,10 +52,11 @@ namespace ChatApp
 
             app.MapHub<ChatHub>("/chatHub");
 
+            app.MapRazorPages();
+
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
-            app.MapRazorPages();
 
             app.Run();
         }
