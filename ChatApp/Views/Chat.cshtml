@@ -1,0 +1,37 @@
+﻿@model List<YourNamespace.Models.ChatMessage>
+
+<h2>Chat</h2>
+
+<div id="chatBox">
+    @foreach (var msg in Model)
+    {
+        <p><b>@msg.SenderId:</b> @msg.Message</p>
+    }
+</div>
+
+<input type="text" id="messageInput" placeholder="Type a message..." />
+<button id="sendButton">Send</button>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .build();
+
+        connection.on("ReceiveMessage", function (sender, message) {
+            var chatBox = document.getElementById("chatBox");
+            chatBox.innerHTML += `<p><b>${sender}:</b> ${message}</p>`;
+        });
+
+        connection.start().then(function () {
+            document.getElementById("sendButton").disabled = false;
+        });
+
+        document.getElementById("sendButton").addEventListener("click", function () {
+            var message = document.getElementById("messageInput").value;
+            var receiverId = "@ViewBag.ReceiverId";
+            connection.invoke("SendMessage", receiverId, message);
+        });
+    </script>
+}
