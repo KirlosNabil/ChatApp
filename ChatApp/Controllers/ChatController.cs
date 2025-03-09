@@ -1,5 +1,6 @@
 ﻿using ChatApp.Data;
 using ChatApp.Models;
+using ChatApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -41,12 +42,20 @@ namespace ChatApp.Controllers
         {
             ViewBag.ReceiverId = userId;
             string senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var messages = _dbContext.ChatMessages
+            List<ChatMessage> messages = _dbContext.ChatMessages
             .Where(u => (u.SenderId == senderId && u.ReceiverId == userId) ||
                 (u.SenderId == userId && u.ReceiverId == senderId))
             .OrderBy(m => m.Date)
             .ToList();
-            return View(messages);
+            ChatViewModel cvm = new ChatViewModel();
+            cvm.ChatMessages = new List<Tuple<ChatMessage, string>>();
+            foreach(ChatMessage message in messages)
+            {
+                string sender = message.SenderId;
+                string name = _dbContext.Users.FirstOrDefault(u => u.Id == sender).FirstName;
+                cvm.ChatMessages.Add(Tuple.Create(message, name));
+            }
+            return View(cvm);
         }
     }
 }

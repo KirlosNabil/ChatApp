@@ -1,11 +1,11 @@
-﻿@model List<ChatApp.Models.ChatMessage>
+﻿@model ChatApp.ViewModels.ChatViewModel
 
 <h2>Chat</h2>
 
 <div id="chatBox">
-    @foreach (var msg in Model)
+    @foreach (var msg in Model.ChatMessages)
     {
-        <p><b>@msg.SenderId:</b> @msg.Message</p>
+        <p><b>@msg.Item2:</b> @msg.Item1.Message</p>
     }
 </div>
 
