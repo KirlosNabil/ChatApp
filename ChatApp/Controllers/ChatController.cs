@@ -1,8 +1,10 @@
-﻿using ChatApp.Models;
+﻿using ChatApp.Data;
+using ChatApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ChatApp.Controllers
@@ -11,10 +13,11 @@ namespace ChatApp.Controllers
     public class ChatController : Controller
     {
         private readonly UserManager<User> _userManager;
-
-        public ChatController(UserManager<User> userManager)
+        private readonly ApplicationDbContext _dbContext;
+        public ChatController(UserManager<User> userManager, ApplicationDbContext dbContext)
         {
-            _userManager = userManager;
+            this._userManager = userManager;
+            this._dbContext = dbContext;
         }
 
         public IActionResult EnterEmail()
@@ -37,8 +40,12 @@ namespace ChatApp.Controllers
         public IActionResult Index(string userId)
         {
             ViewBag.ReceiverId = userId;
-
-            var messages = new List<ChatMessage>();
+            string senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var messages = _dbContext.ChatMessages
+            .Where(u => (u.SenderId == senderId && u.ReceiverId == userId) ||
+                (u.SenderId == userId && u.ReceiverId == senderId))
+            .OrderBy(m => m.Date)
+            .ToList();
             return View(messages);
         }
     }

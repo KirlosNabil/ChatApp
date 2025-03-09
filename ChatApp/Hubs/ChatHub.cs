@@ -9,7 +9,7 @@ namespace ChatApp.Hubs
     {
         private readonly ApplicationDbContext _dbContext;
         private static ConcurrentDictionary<string, string> _connectedUsers = new ConcurrentDictionary<string, string>();
-        ChatHub(ApplicationDbContext dbContext)
+        public ChatHub(ApplicationDbContext dbContext)
         {
             this._dbContext = dbContext;
         }
@@ -63,6 +63,10 @@ namespace ChatApp.Hubs
                 newMessage.Delivered = true;
                 _dbContext.ChatMessages.Update(newMessage);
                 await _dbContext.SaveChangesAsync();
+            }
+            if (_connectedUsers.TryGetValue(senderId, out var senderConnectionId))
+            {
+                await Clients.Client(senderConnectionId).SendAsync("ReceiveMessage", senderId, message);
             }
         }
     }
