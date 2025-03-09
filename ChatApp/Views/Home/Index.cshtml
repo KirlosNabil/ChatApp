@@ -2,9 +2,33 @@
     ViewData["Title"] = "Home Page";
 }
 
-<h2>Welcome to ChatApp!</h2>
+<div class="text-center mt-5">
+    <h2>Welcome to ChatApp!</h2>
+</div>
 
-<!-- Button to start a chat by entering an email -->
-<a class="btn btn-success" asp-controller="Chat" asp-action="EnterEmail">
+<h3 class="mt-4">Search for Friends</h3>
+
+<form method="get" asp-action="Search" asp-controller="Home" class="d-flex mb-3">
+    <input type="text" name="username" class="form-control me-2" placeholder="Search by username..." required />
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+@model List<ChatApp.Models.User>
+
+@if (Model != null && Model.Any())
+{
+    <ul class="list-group">
+        @foreach (var user in Model)
+        {
+            <li class="list-group-item">@user.FirstName  @user.LastName</li>
+        }
+    </ul>
+}
+else if (Model != null)
+{
+    <p>No users found.</p>
+}
+
+<a class="btn btn-success mt-3" asp-controller="Chat" asp-action="EnterEmail">
     Chat with a user by email
 </a>
