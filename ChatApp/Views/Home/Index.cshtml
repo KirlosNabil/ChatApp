@@ -20,7 +20,10 @@
     <ul class="list-group">
         @foreach (var user in Model)
         {
-            <li class="list-group-item">@user.FirstName  @user.LastName</li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>@user.FirstName @user.LastName</span>
+                <button class="btn btn-outline-success btn-sm sendRequestBtn" data-userid="@user.Id">Add Friend</button>
+            </li>
         }
     </ul>
 }
@@ -32,3 +35,31 @@ else if (Model != null)
 <a class="btn btn-success mt-3" asp-controller="Chat" asp-action="EnterEmail">
     Chat with a user by email
 </a>
+
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        var friendRequestConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/friendRequestHub")
+            .build();
+
+        friendRequestConnection.start().then(function () {
+            const sendRequestButtons = document.querySelectorAll(".sendRequestBtn");
+
+            sendRequestButtons.forEach(button => {
+                button.disabled = false; // Enable all buttons once connected
+
+                button.addEventListener("click", function () {
+                    var receiverId = button.getAttribute("data-userid"); // Get the user's ID
+                    friendRequestConnection.invoke("SendFriendRequest", receiverId)
+                        .catch(function (err) {
+                            console.error(err.toString());
+                        });
+                });
+            });
+        }).catch(function (err) {
+            console.error(err.toString());
+        });
+    </script>
+}

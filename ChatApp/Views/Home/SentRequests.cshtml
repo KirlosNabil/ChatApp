@@ -1,0 +1,24 @@
+﻿@model List<string>
+
+@{
+    ViewData["Title"] = "Sent Friend Requests";
+}
+
+<h2 class="mt-4">Sent Friend Requests</h2>
+
+@if (Model.Any())
+{
+    <ul class="list-group">
+        @foreach (var request in Model)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>@request</span>
+                <span class="badge bg-warning">Pending</span>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No sent friend requests.</p>
+}

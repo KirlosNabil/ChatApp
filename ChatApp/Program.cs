@@ -52,6 +52,8 @@ namespace ChatApp
 
             app.MapHub<ChatHub>("/chatHub");
 
+            app.MapHub<FriendRequestHub>("/friendRequestHub");
+
             app.MapRazorPages();
 
             app.MapControllerRoute(

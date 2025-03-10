@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Claims;
 using ChatApp.Data;
 using ChatApp.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +37,19 @@ namespace ChatApp.Controllers
                 users = _dbContext.Users.Where(u => u.FirstName.Contains(names[0]) && u.LastName.Contains(names[1])).ToList();
             }
             return View("Index", users);
+        }
+
+        public IActionResult SentRequests()
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            User user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
+            List<string> sentRequests = new List<string>();
+            foreach(string name in user.FriendList)
+            {
+                sentRequests.Add(name);
+            }
+            return View(sentRequests);
+
         }
 
         public IActionResult Index()
