@@ -1,10 +1,10 @@
-﻿@model List<string>
+﻿@model List<ChatApp.ViewModels.FriendRequestViewModel>
 
 @{
-    ViewData["Title"] = "Sent Friend Requests";
+    ViewData["Title"] = "Friend Requests";
 }
 
-<h2 class="mt-4">Sent Friend Requests</h2>
+<h2 class="mt-4">Friend Requests</h2>
 
 @if (Model.Any())
 {
@@ -12,7 +12,7 @@
         @foreach (var request in Model)
         {
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>@request</span>
+                <span>@request.SenderFirstName @request.SenderLastName</span>
                 <span class="badge bg-warning">Pending</span>
             </li>
         }
@@ -20,7 +20,7 @@
 }
 else
 {
-    <p id="noRequestsMessage">No sent friend requests.</p>
+    <p id="noRequestsMessage">No friend requests.</p>
 }
 
 @section Scripts {
@@ -31,8 +31,7 @@ else
             .withUrl("/friendRequestHub")
             .build();
 
-        connection.on("NewFriendRequest", function (receiverId) {
-            console.log("Friend request sent to " + receiverId);
+        connection.on("NewFriendRequest", function (receiverId, firstname, lastname) {
 
             const noRequestsMessage = document.getElementById("noRequestsMessage");
             if (noRequestsMessage) {
@@ -40,16 +39,11 @@ else
             }
 
             let requestsList = document.getElementById("requestsList");
-            if (!requestsList) {
-                requestsList = document.createElement("ul");
-                requestsList.id = "requestsList";
-                requestsList.className = "list-group";
-                document.body.appendChild(requestsList);
-            }
+    
 
             const li = document.createElement("li");
             li.className = "list-group-item d-flex justify-content-between align-items-center";
-            li.innerHTML = `<span>${receiverId}</span><span class="badge bg-warning">Pending</span>`;
+            li.innerHTML = `<span>${firstname} ${lastname}</span><span class="badge bg-warning">Pending</span>`;
 
             requestsList.appendChild(li);
         });

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Linq;
 using ChatApp.Data;
 using ChatApp.Models;
 using Microsoft.AspNetCore.SignalR;
@@ -27,17 +28,18 @@ namespace ChatApp.Hubs
                 if (userId != null)
                 {
                     _connectedUsers[userId] = Context.ConnectionId;
-                    User user = await _dbContext.Users
-                                        .Include(u => u.FriendList)
-                                        .FirstOrDefaultAsync(u => u.Id == userId);
-
-                    if (user?.FriendList != null && user.FriendList.Any())
+                    List<FriendRequest> friendRequests = _dbContext.FriendRequests
+                        .Where(u => u.ReceiverId == userId && u.Status == FriendRequestStatus.Sent).ToList();
+                    foreach (var pendingRequest in friendRequests)
                     {
-                        foreach (var pendingRequest in user.FriendList)
-                        {
-                            await Clients.Client(Context.ConnectionId).SendAsync("NewFriendRequest", pendingRequest);
-                        }
+                        User user = await _dbContext.Users.FindAsync(pendingRequest.SenderId);
+                        string senderFirstName = user.FirstName;
+                        string senderLastName = user.LastName;
+                        await Clients.Client(Context.ConnectionId).SendAsync("NewFriendRequest", pendingRequest.SenderId, senderFirstName, senderLastName);
+                        pendingRequest.Status = FriendRequestStatus.Pending;
+                        _dbContext.Update(pendingRequest);
                     }
+                    await _dbContext.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
@@ -76,24 +78,25 @@ namespace ChatApp.Hubs
                     _logger.LogWarning("SendFriendRequest called with null or empty senderId.");
                     return;
                 }
-
+                User sender = await _dbContext.Users.FindAsync(senderId); 
                 User receiver = await _dbContext.Users.FindAsync(receiverId);
                 if (receiver != null)
                 {
-                    receiver.FriendList.Add(senderId);
-                    _dbContext.Users.Update(receiver);
+                    FriendRequest friendRequest = new FriendRequest()
+                    {
+                        ReceiverId = receiverId,
+                        SenderId = senderId,
+                        Status = FriendRequestStatus.Sent
+                    };
+                    _dbContext.FriendRequests.Add(friendRequest);
                     await _dbContext.SaveChangesAsync();
 
-                    // Notify the receiver that a new friend request has been received
                     if (_connectedUsers.TryGetValue(receiverId, out var receiverConnectionId))
                     {
-                        await Clients.Client(receiverConnectionId).SendAsync("NewFriendRequest", senderId);
-                    }
-
-                    // Notify the sender that the request was sent
-                    if (_connectedUsers.TryGetValue(senderId, out var senderConnectionId))
-                    {
-                        await Clients.Client(senderConnectionId).SendAsync("FriendRequestSent", receiverId);
+                        await Clients.Client(receiverConnectionId).SendAsync("NewFriendRequest", senderId, sender.FirstName, sender.LastName);
+                        friendRequest.Status = FriendRequestStatus.Pending;
+                        _dbContext.FriendRequests.Update(friendRequest);
+                        await _dbContext.SaveChangesAsync();
                     }
                 }
             }

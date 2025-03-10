@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using ChatApp.Data;
 using ChatApp.Models;
+using ChatApp.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using static Azure.Core.HttpHeader;
@@ -39,17 +40,29 @@ namespace ChatApp.Controllers
             return View("Index", users);
         }
 
-        public IActionResult SentRequests()
+        public IActionResult FriendRequests()
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            User user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
-            List<string> sentRequests = new List<string>();
-            foreach(string name in user.FriendList)
-            {
-                sentRequests.Add(name);
-            }
-            return View(sentRequests);
 
+            List<FriendRequest> friendRequests= _dbContext.FriendRequests
+                .Where(u => u.ReceiverId == userId && u.Status == FriendRequestStatus.Pending).ToList();
+
+            List<FriendRequestViewModel> frvm = new List<FriendRequestViewModel>();
+            foreach(FriendRequest f in friendRequests)
+            {
+                string senderId = f.SenderId;
+                User sender = _dbContext.Users.FirstOrDefault(u => u.Id == senderId);
+                string firstName = sender.FirstName;
+                string lastName = sender.LastName;
+                FriendRequestViewModel fvmm = new FriendRequestViewModel()
+                {
+                    SenderFirstName = firstName,
+                    SenderLastName = lastName,
+                    SenderId = senderId,
+                };
+                frvm.Add(fvmm);
+            }
+            return View(frvm);
         }
 
         public IActionResult Index()

@@ -3,39 +3,38 @@
 }
 
 <div class="text-center mt-5">
-    <h2>Welcome to ChatApp!</h2>
+    <h1>Welcome to ChatApp!</h1>
 </div>
 
-<h3 class="mt-4">Search for Friends</h3>
 
-<form method="get" asp-action="Search" asp-controller="Home" class="d-flex mb-3">
-    <input type="text" name="username" class="form-control me-2" placeholder="Search by username..." required />
-    <button type="submit" class="btn btn-primary">Search</button>
-</form>
+@if (User.Identity?.IsAuthenticated ?? false)
+{
+    <h3 class="mt-5 mb-4">Search for Friends</h3>
+
+    <form method="get" asp-action="Search" asp-controller="Home" class="d-flex mb-3">
+        <input type="text" name="username" class="form-control me-2" placeholder="Search by username..." required />
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
 
 @model List<ChatApp.Models.User>
 
-@if (Model != null && Model.Any())
-{
-    <ul class="list-group">
-        @foreach (var user in Model)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>@user.FirstName @user.LastName</span>
-                <button class="btn btn-outline-success btn-sm sendRequestBtn" data-userid="@user.Id">Add Friend</button>
-            </li>
-        }
-    </ul>
+    @if (Model != null && Model.Any())
+    {
+        <ul class="list-group">
+            @foreach (var user in Model)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>@user.FirstName @user.LastName</span>
+                    <button class="btn btn-outline-success btn-sm sendRequestBtn" data-userid="@user.Id">Add Friend</button>
+                </li>
+            }
+        </ul>
+    }
+    else if (Model != null)
+    {
+        <p>No users found.</p>
+    }
 }
-else if (Model != null)
-{
-    <p>No users found.</p>
-}
-
-<a class="btn btn-success mt-3" asp-controller="Chat" asp-action="EnterEmail">
-    Chat with a user by email
-</a>
-
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>

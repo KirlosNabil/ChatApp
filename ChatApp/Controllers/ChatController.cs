@@ -21,15 +21,10 @@ namespace ChatApp.Controllers
             this._dbContext = dbContext;
         }
 
-        public IActionResult EnterEmail()
-        {
-            return View();
-        }
-
         [HttpPost]
-        public async Task<IActionResult> StartChat(string receiverEmail)
+        public async Task<IActionResult> StartChat(string recieverId)
         {
-            var user = await _userManager.FindByEmailAsync(receiverEmail);
+            var user = await _dbContext.Users.FindAsync(recieverId);
             if (user == null)
             {
                 ModelState.AddModelError("", "User not found.");
@@ -43,8 +38,9 @@ namespace ChatApp.Controllers
             ViewBag.ReceiverId = userId;
             string senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             List<ChatMessage> messages = _dbContext.ChatMessages
-            .Where(u => (u.SenderId == senderId && u.ReceiverId == userId) ||
+            .Where(u => ((u.SenderId == senderId && u.ReceiverId == userId) ||
                 (u.SenderId == userId && u.ReceiverId == senderId))
+                && u.Delivered == true)
             .OrderBy(m => m.Date)
             .ToList();
             ChatViewModel cvm = new ChatViewModel();
