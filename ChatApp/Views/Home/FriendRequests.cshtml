@@ -6,22 +6,23 @@
 
 <h2 class="mt-4">Friend Requests</h2>
 
-@if (Model.Any())
-{
-    <ul class="list-group" id="requestsList">
-        @foreach (var request in Model)
+<ul class="list-group" id="requestsList">
+    @if (Model.Any())
+    {
+        foreach (var request in Model)
         {
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <span>@request.SenderFirstName @request.SenderLastName</span>
-                <span class="badge bg-warning">Pending</span>
+                <div>
+                    <button class="btn btn-success btn-sm accept-btn" data-requestid="@request.SenderId">Accept</button>
+                    <button class="btn btn-danger btn-sm reject-btn" data-requestid="@request.SenderId">Reject</button>
+                </div>
             </li>
         }
-    </ul>
-}
-else
-{
-    <p id="noRequestsMessage">No friend requests.</p>
-}
+    }
+</ul>
+
+<p id="noRequestsMessage" style="display: @(Model.Any() ? "none" : "block");">No friend requests.</p>
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
@@ -31,21 +32,41 @@ else
             .withUrl("/friendRequestHub")
             .build();
 
-        connection.on("NewFriendRequest", function (receiverId, firstname, lastname) {
+        connection.on("NewFriendRequest", function (receiverId, firstname, lastname, requestId) {
+            document.getElementById("noRequestsMessage").style.display = "none";
 
-            const noRequestsMessage = document.getElementById("noRequestsMessage");
-            if (noRequestsMessage) {
-                noRequestsMessage.style.display = "none";
-            }
-
-            let requestsList = document.getElementById("requestsList");
-    
+            const requestsList = document.getElementById("requestsList");
 
             const li = document.createElement("li");
             li.className = "list-group-item d-flex justify-content-between align-items-center";
-            li.innerHTML = `<span>${firstname} ${lastname}</span><span class="badge bg-warning">Pending</span>`;
+            li.innerHTML = `
+                        <span>${firstname} ${lastname}</span>
+                        <div>
+                            <button class="btn btn-success btn-sm accept-btn" data-requestid="${requestId}">Accept</button>
+                            <button class="btn btn-danger btn-sm reject-btn" data-requestid="${requestId}">Reject</button>
+                        </div>
+                    `;
 
             requestsList.appendChild(li);
+        });
+
+        document.addEventListener("click", function (event) {
+            if (event.target.classList.contains("accept-btn") || event.target.classList.contains("reject-btn")) {
+                const requestId = event.target.getAttribute("data-requestid");
+                const url = event.target.classList.contains("accept-btn")
+                    ? `/FriendRequest/Accept/${requestId}`
+                    : `/FriendRequest/Reject/${requestId}`;
+
+                fetch(url, { method: 'POST' })
+                    .then(() => {
+                        const listItem = event.target.closest("li");
+                        listItem.remove();
+
+                        if (!document.querySelector("#requestsList .list-group-item")) {
+                            document.getElementById("noRequestsMessage").style.display = "block";
+                        }
+                    });
+            }
         });
 
         connection.start().then(function () {

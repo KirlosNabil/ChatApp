@@ -6,7 +6,6 @@
     <h1>Welcome to ChatApp!</h1>
 </div>
 
-
 @if (User.Identity?.IsAuthenticated ?? false)
 {
     <h3 class="mt-5 mb-4">Search for Friends</h3>
@@ -51,9 +50,14 @@
 
                 button.addEventListener("click", function () {
                     var receiverId = button.getAttribute("data-userid");
+                    button.disabled = true;
+                    button.innerText = "Request Sent";
+
                     friendRequestConnection.invoke("SendFriendRequest", receiverId)
                         .catch(function (err) {
                             console.error(err.toString());
+                            button.disabled = false;
+                            button.innerText = "Add Friend";
                         });
                 });
             });

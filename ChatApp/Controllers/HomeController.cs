@@ -26,16 +26,25 @@ namespace ChatApp.Controllers
             {
                 return View("Index", new List<User>());
             }
-
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var names = username.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var users = new List<User>();
+            var sentRequestUserIds = _dbContext.FriendRequests
+            .Where(fr => fr.SenderId == userId || fr.ReceiverId == userId)
+            .Select(fr => fr.SenderId == userId ? fr.ReceiverId : fr.SenderId)
+            .ToHashSet();
             if (names.Length == 1)
             {
-                users  = _dbContext.Users.Where(u => u.FirstName.Contains(names[0])).ToList();
+                users  = _dbContext.Users.Where(u => u.FirstName.Contains(names[0])
+                && u.Id != userId
+                && !sentRequestUserIds.Contains(u.Id)).ToList();
             }
             else if (names.Length >= 2)
             {
-                users = _dbContext.Users.Where(u => u.FirstName.Contains(names[0]) && u.LastName.Contains(names[1])).ToList();
+                users = _dbContext.Users.Where(u => u.FirstName.Contains(names[0])
+                && u.LastName.Contains(names[1])
+                && u.Id != userId
+                && !sentRequestUserIds.Contains(u.Id)).ToList();
             }
             return View("Index", users);
         }
@@ -61,6 +70,31 @@ namespace ChatApp.Controllers
                     SenderId = senderId,
                 };
                 frvm.Add(fvmm);
+            }
+            return View(frvm);
+        }
+
+        public IActionResult SentRequests()
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            List<FriendRequest> friendRequests = _dbContext.FriendRequests
+                .Where(u => u.SenderId == userId && (u.Status == FriendRequestStatus.Pending || u.Status == FriendRequestStatus.Sent)).ToList();
+
+            List<SentRequestViewModel> frvm = new List<SentRequestViewModel>();
+            foreach (FriendRequest f in friendRequests)
+            {
+                string receiverId = f.ReceiverId;
+                User receiver = _dbContext.Users.FirstOrDefault(u => u.Id == receiverId);
+                string firstName = receiver.FirstName;
+                string lastName = receiver.LastName;
+                SentRequestViewModel srvm = new SentRequestViewModel()
+                {
+                    ReceiverFirstName = firstName,
+                    ReceiverLastName = lastName,
+                    ReceiverId = receiverId
+                };
+                frvm.Add(srvm);
             }
             return View(frvm);
         }
