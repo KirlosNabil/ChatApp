@@ -8,7 +8,7 @@
 
 @if (Model.Any())
 {
-    <ul class="list-group">
+    <ul class="list-group" id="requestsList">
         @foreach (var request in Model)
         {
             <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -20,5 +20,44 @@
 }
 else
 {
-    <p>No sent friend requests.</p>
+    <p id="noRequestsMessage">No sent friend requests.</p>
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/friendRequestHub")
+            .build();
+
+        connection.on("NewFriendRequest", function (receiverId) {
+            console.log("Friend request sent to " + receiverId);
+
+            const noRequestsMessage = document.getElementById("noRequestsMessage");
+            if (noRequestsMessage) {
+                noRequestsMessage.style.display = "none";
+            }
+
+            let requestsList = document.getElementById("requestsList");
+            if (!requestsList) {
+                requestsList = document.createElement("ul");
+                requestsList.id = "requestsList";
+                requestsList.className = "list-group";
+                document.body.appendChild(requestsList);
+            }
+
+            const li = document.createElement("li");
+            li.className = "list-group-item d-flex justify-content-between align-items-center";
+            li.innerHTML = `<span>${receiverId}</span><span class="badge bg-warning">Pending</span>`;
+
+            requestsList.appendChild(li);
+        });
+
+        connection.start().then(function () {
+            console.log("Connected to FriendRequestHub.");
+        }).catch(function (err) {
+            console.error(err.toString());
+        });
+    </script>
 }

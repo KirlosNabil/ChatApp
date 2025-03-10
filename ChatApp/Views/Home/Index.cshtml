@@ -48,10 +48,10 @@ else if (Model != null)
             const sendRequestButtons = document.querySelectorAll(".sendRequestBtn");
 
             sendRequestButtons.forEach(button => {
-                button.disabled = false; // Enable all buttons once connected
+                button.disabled = false;
 
                 button.addEventListener("click", function () {
-                    var receiverId = button.getAttribute("data-userid"); // Get the user's ID
+                    var receiverId = button.getAttribute("data-userid");
                     friendRequestConnection.invoke("SendFriendRequest", receiverId)
                         .catch(function (err) {
                             console.error(err.toString());

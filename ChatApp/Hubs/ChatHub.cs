@@ -2,71 +2,108 @@
 using ChatApp.Data;
 using ChatApp.Models;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 
 namespace ChatApp.Hubs
 {
     public class ChatHub : Hub
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly ILogger<ChatHub> _logger;
         private static ConcurrentDictionary<string, string> _connectedUsers = new ConcurrentDictionary<string, string>();
-        public ChatHub(ApplicationDbContext dbContext)
+
+        public ChatHub(ApplicationDbContext dbContext, ILogger<ChatHub> logger)
         {
-            this._dbContext = dbContext;
+            _dbContext = dbContext;
+            _logger = logger;
         }
+
         public override async Task OnConnectedAsync()
         {
-            var userId = Context.UserIdentifier;
-            if (userId != null)
+            try
             {
-                _connectedUsers[userId] = Context.ConnectionId;
-
-                var pendingMessages = _dbContext.ChatMessages
-                    .Where(m => m.ReceiverId == userId && !m.Delivered)
-                    .ToList();
-
-                foreach (var message in pendingMessages)
+                var userId = Context.UserIdentifier;
+                if (userId != null)
                 {
-                    await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", message.SenderId, message.Message);
-                    message.Delivered = true;
-                }
+                    _connectedUsers[userId] = Context.ConnectionId;
 
-                await _dbContext.SaveChangesAsync();
+                    var pendingMessages = _dbContext.ChatMessages
+                        .Where(m => m.ReceiverId == userId && !m.Delivered)
+                        .ToList();
+
+                    foreach (var message in pendingMessages)
+                    {
+                        await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", message.SenderId, message.Message);
+                        message.Delivered = true;
+                    }
+
+                    await _dbContext.SaveChangesAsync();
+                }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in OnConnectedAsync for user {UserId}", Context.UserIdentifier);
+            }
+
             await base.OnConnectedAsync();
         }
+
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var userId = Context.UserIdentifier;
-            if (userId != null)
+            try
             {
-                _connectedUsers.TryRemove(userId, out _);
+                var userId = Context.UserIdentifier;
+                if (userId != null)
+                {
+                    _connectedUsers.TryRemove(userId, out _);
+                }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in OnDisconnectedAsync for user {UserId}", Context.UserIdentifier);
+            }
+
             await base.OnDisconnectedAsync(exception);
         }
+
         public async Task SendMessage(string receiverId, string message)
         {
-            string senderId = Context.UserIdentifier;
-            ChatMessage newMessage = new ChatMessage
+            try
             {
-                SenderId = senderId,
-                ReceiverId = receiverId,
-                Message = message,
-                Date = DateTime.UtcNow
-            };
+                string senderId = Context.UserIdentifier;
+                if (string.IsNullOrEmpty(senderId))
+                {
+                    _logger.LogWarning("SendMessage called with null or empty senderId.");
+                    return;
+                }
 
-            await _dbContext.ChatMessages.AddAsync(newMessage);
-            await _dbContext.SaveChangesAsync();
+                ChatMessage newMessage = new ChatMessage
+                {
+                    SenderId = senderId,
+                    ReceiverId = receiverId,
+                    Message = message,
+                    Date = DateTime.UtcNow
+                };
 
-            if (senderId != null && _connectedUsers.TryGetValue(receiverId, out var receiverConnectionId))
-            {
-                await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", senderId, message);
-                newMessage.Delivered = true;
-                _dbContext.ChatMessages.Update(newMessage);
+                await _dbContext.ChatMessages.AddAsync(newMessage);
                 await _dbContext.SaveChangesAsync();
+
+                if (_connectedUsers.TryGetValue(receiverId, out var receiverConnectionId))
+                {
+                    await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", senderId, message);
+                    newMessage.Delivered = true;
+                    _dbContext.ChatMessages.Update(newMessage);
+                    await _dbContext.SaveChangesAsync();
+                }
+
+                if (_connectedUsers.TryGetValue(senderId, out var senderConnectionId))
+                {
+                    await Clients.Client(senderConnectionId).SendAsync("ReceiveMessage", senderId, message);
+                }
             }
-            if (_connectedUsers.TryGetValue(senderId, out var senderConnectionId))
+            catch (Exception ex)
             {
-                await Clients.Client(senderConnectionId).SendAsync("ReceiveMessage", senderId, message);
+                _logger.LogError(ex, "Error in SendMessage from {SenderId} to {ReceiverId}", Context.UserIdentifier, receiverId);
             }
         }
     }
