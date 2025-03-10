@@ -7,6 +7,5 @@ namespace ChatApp.Models
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public List<string> FriendList { get; set; } = new List<string>();
-        public List<string> FriendRequests { get; set; } = new List<string>();
     }
 }

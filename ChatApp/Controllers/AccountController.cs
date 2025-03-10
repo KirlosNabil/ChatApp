@@ -19,8 +19,10 @@ namespace ChatApp.Controllers
         }
 
         [HttpGet]
-        public IActionResult Register() => View();
-
+        public IActionResult Register()
+        {
+            return View();
+        }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -57,7 +59,6 @@ namespace ChatApp.Controllers
         {
             return View();
         }
-
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
