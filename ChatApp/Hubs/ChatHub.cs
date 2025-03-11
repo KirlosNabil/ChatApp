@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Reflection;
 using ChatApp.Data;
 using ChatApp.Models;
 using Microsoft.AspNetCore.SignalR;
@@ -33,7 +34,8 @@ namespace ChatApp.Hubs
 
                     foreach (var message in pendingMessages)
                     {
-                        await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", message.SenderId, message.Message);
+                        User sender = _dbContext.Users.FirstOrDefault(u => u.Id == message.SenderId);
+                        await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", message.SenderId, sender.FirstName + " " + sender.LastName, message.Message);
                         message.Delivered = true;
                     }
 
@@ -87,10 +89,10 @@ namespace ChatApp.Hubs
 
                 await _dbContext.ChatMessages.AddAsync(newMessage);
                 await _dbContext.SaveChangesAsync();
-
+                User sender = _dbContext.Users.FirstOrDefault(u => u.Id == senderId);
                 if (_connectedUsers.TryGetValue(receiverId, out var receiverConnectionId))
                 {
-                    await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", senderId, message);
+                    await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", senderId, sender.FirstName + " " + sender.LastName, message);
                     newMessage.Delivered = true;
                     _dbContext.ChatMessages.Update(newMessage);
                     await _dbContext.SaveChangesAsync();
@@ -98,7 +100,7 @@ namespace ChatApp.Hubs
 
                 if (_connectedUsers.TryGetValue(senderId, out var senderConnectionId))
                 {
-                    await Clients.Client(senderConnectionId).SendAsync("ReceiveMessage", senderId, message);
+                    await Clients.Client(senderConnectionId).SendAsync("ReceiveMessage", senderId, "You", message);
                 }
             }
             catch (Exception ex)

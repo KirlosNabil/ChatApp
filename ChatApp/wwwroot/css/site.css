@@ -43,9 +43,16 @@ body {
 main {
     flex: 1;
     background-color: #2E2E2E;
+    /* Add padding to ensure content isn't hidden behind the fixed footer */
+    padding-bottom: 60px;
 }
 
 footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
     background-color: #000000;
     padding: 10px 0;
     border: none !important;
