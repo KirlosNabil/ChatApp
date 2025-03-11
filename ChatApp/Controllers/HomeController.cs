@@ -104,7 +104,7 @@ namespace ChatApp.Controllers
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             User user = _dbContext.Users.FirstOrDefault(x => x.Id == userId);
-            User sender = _dbContext.Users.FirstOrDefault(x => x.Id == userId);
+            User sender = _dbContext.Users.FirstOrDefault(x => x.Id == id);
 
             user.FriendList.Add(sender.Id);
             sender.FriendList.Add(user.Id);
@@ -139,10 +139,19 @@ namespace ChatApp.Controllers
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             User user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
-            friendRequest.Status = FriendRequestStatus.Rejected;
-            _dbContext.FriendRequests.Update(friendRequest);
-            _dbContext.SaveChanges();
-            return Ok();
+            List<FriendViewModel> friends = new List<FriendViewModel>();
+            foreach(string friend in user.FriendList)
+            {
+                User f = _dbContext.Users.FirstOrDefault(u => u.Id == friend);
+                FriendViewModel fvm = new FriendViewModel()
+                {
+                    FriendId = friend,
+                    FirstName = f.FirstName,
+                    LastName = f.LastName
+                };
+                friends.Add(fvm);
+            }
+            return View(friends);
         }
 
         public IActionResult Index()
