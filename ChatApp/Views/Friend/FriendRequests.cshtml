@@ -56,13 +56,12 @@
         });
 
         connection.start().then(function () {
-            console.log("Connected to FriendRequestHub.");
         }).catch(function (err) {
             console.error(err.toString());
         });
 
         function handleResponse(requestId, action, textClass) {
-            fetch(`/Home/${action}FriendRequest`, {
+            fetch(`/Friend/${action}FriendRequest`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'

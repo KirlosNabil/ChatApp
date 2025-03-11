@@ -13,20 +13,13 @@ namespace ChatApp.Controllers
     [Authorize]
     public class ChatController : Controller
     {
-        private readonly UserManager<User> _userManager;
         private readonly ApplicationDbContext _dbContext;
-        public ChatController(UserManager<User> userManager, ApplicationDbContext dbContext)
+        public ChatController(ApplicationDbContext dbContext)
         {
-            this._userManager = userManager;
             this._dbContext = dbContext;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> StartChat(string friendId)
-        {
-            return RedirectToAction("Index", new { friendId = friendId });
-        }
-        public IActionResult Index(string friendId)
+        public IActionResult Chat(string friendId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 

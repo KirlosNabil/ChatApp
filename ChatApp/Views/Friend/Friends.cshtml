@@ -14,8 +14,8 @@
             <li class="list-group-item d-flex justify-content-between align-items-center" id="friend-@friend.FriendId">
                 <span>@friend.FirstName @friend.LastName</span>
                 <div>
-                    <a href="@Url.Action("StartChat", "Chat", new { friendId = @friend.FriendId })" class="btn btn-primary btn-sm">Chat</a>
-                    <form method="post" action="@Url.Action("RemoveFriend", "Home")" style="display: inline;">
+                    <a href="@Url.Action("Chat", "Chat", new { friendId = @friend.FriendId })" class="btn btn-primary btn-sm">Chat</a>
+                    <form method="post" action="@Url.Action("RemoveFriend", "Friend")" style="display: inline;">
                         <input type="hidden" name="friendId" value="@friend.FriendId" />
                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                     </form>
