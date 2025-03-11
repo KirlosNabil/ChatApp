@@ -1,0 +1,58 @@
+﻿@model List<ChatApp.ViewModels.FriendViewModel>
+
+@{
+    ViewData["Title"] = "Friends List";
+}
+
+<h2 class="mt-4">Friends List</h2>
+
+<ul class="list-group" id="friendsList">
+    @if (Model.Any())
+    {
+        foreach (var friend in Model)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center" id="friend-@friend.FriendId">
+                <span>@friend.FirstName @friend.LastName</span>
+                <div>
+                    <a href="/Chat/StartChat?friendId=@friend.FriendId" class="btn btn-primary btn-sm">Chat</a>
+                    <button class="btn btn-danger btn-sm" onclick="removeFriend('@friend.FriendId')">Remove</button>
+                </div>
+            </li>
+        }
+    }
+</ul>
+
+<p id="noFriendsMessage" style="display: @(Model.Any() ? "none" : "block");">No friends found.</p>
+
+@section Scripts {
+    <script>
+        function removeFriend(friendId) {
+            if (!confirm("Are you sure you want to remove this friend?")) return;
+
+            fetch(`/Home/RemoveFriend`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ id: friendId })
+            }).then(response => {
+                if (response.ok) {
+                    const friendElement = document.getElementById(`friend-${friendId}`);
+                    if (friendElement) {
+                        friendElement.remove();
+                    }
+
+                    const remainingFriends = document.querySelectorAll("#friendsList li").length;
+                    if (remainingFriends === 0) {
+                        document.getElementById("noFriendsMessage").style.display = "block";
+                    }
+                } else {
+                    alert('Failed to remove friend. Please try again.');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+}

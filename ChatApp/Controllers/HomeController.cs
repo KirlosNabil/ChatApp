@@ -99,6 +99,52 @@ namespace ChatApp.Controllers
             return View(frvm);
         }
 
+        [HttpPost]
+        public IActionResult AcceptFriendRequest(string id)
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            User user = _dbContext.Users.FirstOrDefault(x => x.Id == userId);
+            User sender = _dbContext.Users.FirstOrDefault(x => x.Id == userId);
+
+            user.FriendList.Add(sender.Id);
+            sender.FriendList.Add(user.Id);
+
+            FriendRequest friendRequest = _dbContext.FriendRequests
+                .Where(f => f.SenderId == id && f.ReceiverId == userId)
+                .FirstOrDefault();
+            friendRequest.Status = FriendRequestStatus.Accepted;
+            _dbContext.FriendRequests.Update(friendRequest);
+            _dbContext.Users.Update(user);
+            _dbContext.Users.Update(sender);
+            _dbContext.SaveChanges();
+            return Ok();
+        }
+
+        [HttpPost]
+        public IActionResult RejectFriendRequest(string id)
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            FriendRequest friendRequest = _dbContext.FriendRequests
+                .Where(f => f.SenderId == id && f.ReceiverId == userId)
+                .FirstOrDefault();
+            friendRequest.Status = FriendRequestStatus.Rejected;
+            _dbContext.FriendRequests.Update(friendRequest);
+            _dbContext.SaveChanges();
+            return Ok();
+        }
+
+        public IActionResult Friends()
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            User user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
+            friendRequest.Status = FriendRequestStatus.Rejected;
+            _dbContext.FriendRequests.Update(friendRequest);
+            _dbContext.SaveChanges();
+            return Ok();
+        }
+
         public IActionResult Index()
         {
             return View();
