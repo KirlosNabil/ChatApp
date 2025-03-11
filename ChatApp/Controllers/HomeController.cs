@@ -33,7 +33,7 @@ namespace ChatApp.Controllers
             var users = new List<User>();
             var sentRequestUserIds = _dbContext.FriendRequests
             .Where(fr => (fr.SenderId == userId || fr.ReceiverId == userId)
-            && fr.Status == FriendRequestStatus.Pending || fr.Status == FriendRequestStatus.Sent)
+            && fr.Status == FriendRequestStatus.Pending || fr.Status == FriendRequestStatus.Sent || fr.Status == FriendRequestStatus.Accepted)
             .Select(fr => fr.SenderId == userId ? fr.ReceiverId : fr.SenderId)
             .ToHashSet();
             if (names.Length == 1)
@@ -100,6 +100,28 @@ namespace ChatApp.Controllers
                 frvm.Add(srvm);
             }
             return View(frvm);
+        }
+
+        [HttpPost]
+        public IActionResult RemoveFriend(string friendId)
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            User user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
+            user.FriendList.Remove(friendId);
+            User friend = _dbContext.Users.FirstOrDefault(u => u.Id == friendId);
+            friend.FriendList.Remove(userId);
+            _dbContext.Users.Update(user);
+            _dbContext.Users.Update(friend);
+            _dbContext.SaveChanges();
+            var requests = _dbContext.FriendRequests
+            .Where(f => (f.SenderId == userId && f.ReceiverId == friendId)
+              || (f.SenderId == friendId && f.ReceiverId == userId))
+            .ToList();
+
+            _dbContext.FriendRequests.RemoveRange(requests);
+            _dbContext.SaveChanges();
+
+            return RedirectToAction("Friends");
         }
 
         [HttpPost]
