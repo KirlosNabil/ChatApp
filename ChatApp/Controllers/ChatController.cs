@@ -21,37 +21,43 @@ namespace ChatApp.Controllers
             this._dbContext = dbContext;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> StartChat(string recieverId)
+        [HttpGet]
+        public async Task<IActionResult> StartChat(string friendId)
         {
-            var user = await _dbContext.Users.FindAsync(recieverId);
-            if (user == null)
-            {
-                ModelState.AddModelError("", "User not found.");
-                return View("EnterEmail");
-            }
-            return RedirectToAction("Index", new { userId = user.Id });
+            return RedirectToAction("Index", new { friendId = friendId });
         }
-
-        public IActionResult Index(string userId)
+        public IActionResult Index(string friendId)
         {
-            ViewBag.ReceiverId = userId;
-            string senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            List<ChatMessage> messages = _dbContext.ChatMessages
-            .Where(u => ((u.SenderId == senderId && u.ReceiverId == userId) ||
-                (u.SenderId == userId && u.ReceiverId == senderId))
-                && u.Delivered == true)
-            .OrderBy(m => m.Date)
-            .ToList();
-            ChatViewModel cvm = new ChatViewModel();
-            cvm.ChatMessages = new List<Tuple<ChatMessage, string>>();
-            foreach(ChatMessage message in messages)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var friend = _dbContext.Users.FirstOrDefault(x => x.Id == friendId);
+
+            ChatViewModel chat = new ChatViewModel();
+
+            List<ChatMessage> chatMessages = _dbContext.ChatMessages
+                    .Where(m => ((m.SenderId == userId && m.ReceiverId == friendId) ||
+                                (m.SenderId == friendId && m.ReceiverId == userId)) && m.Delivered == true)
+                    .OrderBy(m => m.Date)
+                    .ToList();
+
+            foreach (ChatMessage ms in chatMessages)
             {
-                string sender = message.SenderId;
-                string name = _dbContext.Users.FirstOrDefault(u => u.Id == sender).FirstName;
-                cvm.ChatMessages.Add(Tuple.Create(message, name));
+                User sender = _dbContext.Users.FirstOrDefault(u => u.Id == ms.SenderId);
+                string name = "";
+                if (ms.SenderId == userId)
+                {
+                    name = "You";
+                }
+                else
+                {
+                    name = sender.FirstName + " " + sender.LastName;
+                }
+
+                chat.ChatMessages.Add(new Tuple<ChatMessage, string>(ms, name));
             }
-            return View(cvm);
+            chat.friendId = friendId;
+            chat.friendName = friend.FirstName + " " + friend.LastName;
+            return View(chat);
         }
     }
 }
