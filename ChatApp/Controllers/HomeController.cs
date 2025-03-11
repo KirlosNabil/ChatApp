@@ -103,6 +103,19 @@ namespace ChatApp.Controllers
         }
 
         [HttpPost]
+        public IActionResult RemoveRequest(string receiverId)
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var requests = _dbContext.FriendRequests
+            .Where(f => f.SenderId == userId && f.ReceiverId == receiverId)
+            .ToList();
+
+            _dbContext.FriendRequests.RemoveRange(requests);
+            _dbContext.SaveChanges();
+            return RedirectToAction("SentRequests");
+        }
+
+        [HttpPost]
         public IActionResult RemoveFriend(string friendId)
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
