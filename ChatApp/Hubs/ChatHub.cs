@@ -10,13 +10,11 @@ namespace ChatApp.Hubs
     public class ChatHub : Hub
     {
         private readonly ApplicationDbContext _dbContext;
-        private readonly ILogger<ChatHub> _logger;
         private static ConcurrentDictionary<string, string> _connectedUsers = new ConcurrentDictionary<string, string>();
 
-        public ChatHub(ApplicationDbContext dbContext, ILogger<ChatHub> logger)
+        public ChatHub(ApplicationDbContext dbContext)
         {
-            _dbContext = dbContext;
-            _logger = logger;
+            this._dbContext = dbContext;
         }
 
         public override async Task OnConnectedAsync()
@@ -42,10 +40,7 @@ namespace ChatApp.Hubs
                     await _dbContext.SaveChangesAsync();
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in OnConnectedAsync for user {UserId}", Context.UserIdentifier);
-            }
+            catch (Exception ex) { }
 
             await base.OnConnectedAsync();
         }
@@ -60,10 +55,7 @@ namespace ChatApp.Hubs
                     _connectedUsers.TryRemove(userId, out _);
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in OnDisconnectedAsync for user {UserId}", Context.UserIdentifier);
-            }
+            catch (Exception ex){}
 
             await base.OnDisconnectedAsync(exception);
         }
@@ -73,11 +65,6 @@ namespace ChatApp.Hubs
             try
             {
                 string senderId = Context.UserIdentifier;
-                if (string.IsNullOrEmpty(senderId))
-                {
-                    _logger.LogWarning("SendMessage called with null or empty senderId.");
-                    return;
-                }
 
                 ChatMessage newMessage = new ChatMessage
                 {
@@ -103,10 +90,7 @@ namespace ChatApp.Hubs
                     await Clients.Client(senderConnectionId).SendAsync("ReceiveMessage", senderId, "You", message);
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in SendMessage from {SenderId} to {ReceiverId}", Context.UserIdentifier, receiverId);
-            }
+            catch (Exception ex){}
         }
     }
 }

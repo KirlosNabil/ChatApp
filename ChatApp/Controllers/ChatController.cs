@@ -21,9 +21,9 @@ namespace ChatApp.Controllers
 
         public IActionResult Chat(string friendId)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var friend = _dbContext.Users.FirstOrDefault(x => x.Id == friendId);
+            User friend = _dbContext.Users.FirstOrDefault(x => x.Id == friendId);
 
             ChatViewModel chat = new ChatViewModel();
 
@@ -51,6 +51,37 @@ namespace ChatApp.Controllers
             chat.friendId = friendId;
             chat.friendName = friend.FirstName + " " + friend.LastName;
             return View(chat);
+        }
+        public IActionResult Chats()
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            List<ChatMessage> messages = _dbContext.ChatMessages
+            .Where(m => m.SenderId == userId || m.ReceiverId == userId)
+            .GroupBy(m => m.SenderId == userId ? m.ReceiverId : m.SenderId)
+            .Select(g => g.OrderByDescending(m => m.Date).FirstOrDefault())
+            .ToList();
+
+            List<ChatsViewModel> chats = new List<ChatsViewModel>();
+            foreach(ChatMessage c in messages)
+            {
+                ChatsViewModel cvm = new ChatsViewModel();
+                User friend;
+                if (c.SenderId == userId)
+                {
+                    friend = _dbContext.Users.FirstOrDefault(u => u.Id == c.ReceiverId);
+                    cvm.lastMesasageSenderName = "You";
+                }
+                else 
+                {
+                    friend = _dbContext.Users.FirstOrDefault(u => u.Id == c.SenderId);
+                    cvm.lastMesasageSenderName = friend.FirstName + " " + friend.LastName;
+                }
+                cvm.lastMessage = c.Message;
+                cvm.friendName = friend.FirstName + " " + friend.LastName;
+                cvm.friendId = friend.Id;
+                chats.Add(cvm);
+            }
+            return View(chats);
         }
     }
 }

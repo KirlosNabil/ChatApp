@@ -11,13 +11,11 @@ namespace ChatApp.Hubs
     public class FriendRequestHub : Hub
     {
         private readonly ApplicationDbContext _dbContext;
-        private readonly ILogger<FriendRequestHub> _logger;
         private static ConcurrentDictionary<string, string> _connectedUsers = new ConcurrentDictionary<string, string>();
 
-        public FriendRequestHub(ApplicationDbContext dbContext, ILogger<FriendRequestHub> logger)
+        public FriendRequestHub(ApplicationDbContext dbContext)
         {
-            _dbContext = dbContext;
-            _logger = logger;
+            this._dbContext = dbContext;
         }
 
         public override async Task OnConnectedAsync()
@@ -42,10 +40,7 @@ namespace ChatApp.Hubs
                     await _dbContext.SaveChangesAsync();
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in OnConnectedAsync for user {UserId}", Context.UserIdentifier);
-            }
+            catch (Exception ex){}
 
             await base.OnConnectedAsync();
         }
@@ -60,10 +55,7 @@ namespace ChatApp.Hubs
                     _connectedUsers.TryRemove(userId, out _);
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in OnDisconnectedAsync for user {UserId}", Context.UserIdentifier);
-            }
+            catch (Exception ex){}
 
             await base.OnDisconnectedAsync(exception);
         }
@@ -73,11 +65,6 @@ namespace ChatApp.Hubs
             try
             {
                 string senderId = Context.UserIdentifier;
-                if (string.IsNullOrEmpty(senderId))
-                {
-                    _logger.LogWarning("SendFriendRequest called with null or empty senderId.");
-                    return;
-                }
                 User sender = await _dbContext.Users.FindAsync(senderId); 
                 User receiver = await _dbContext.Users.FindAsync(receiverId);
                 if (receiver != null)
@@ -100,10 +87,7 @@ namespace ChatApp.Hubs
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in SendFriendRequest from {SenderId} to {ReceiverId}", Context.UserIdentifier, receiverId);
-            }
+            catch (Exception ex){}
         }
 
     }
