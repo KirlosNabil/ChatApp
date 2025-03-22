@@ -2,38 +2,49 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center mt-5">
-    <h1>Welcome to ChatApp!</h1>
+<div class="container">
+    <div class="welcome-box">
+        <h1 class="welcome-text">Your Ultimate Chat Experience Starts Here!</h1>
+        <p class="welcome-subtext">Connect with friends, build relationships, and start conversations.</p>
+    </div>
+
+    @if (User.Identity?.IsAuthenticated ?? false)
+    {
+        <h3 class="cyan-text">Find New Friends</h3>
+
+        <div class="search-section">
+            <form method="get" asp-action="Search" asp-controller="Home" class="d-flex mb-3">
+                <input type="text" name="username" class="form-control me-2 search-input"
+                       placeholder="Search by username..." required />
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
+
+    @model List<ChatApp.Models.User>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="friend-list">
+                <h3>Available Users</h3>
+                <ul class="list-group">
+                    @foreach (var user in Model)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>@user.FirstName @user.LastName</span>
+                            <button class="btn btn-outline-success btn-sm sendRequestBtn" data-userid="@user.Id">
+                                Add Friend
+                            </button>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+        else if (Model != null)
+        {
+            <p class="no-users">No users found.</p>
+        }
+    }
 </div>
-
-@if (User.Identity?.IsAuthenticated ?? false)
-{
-    <h3 class="mt-5 mb-4">Search for Friends</h3>
-
-    <form method="get" asp-action="Search" asp-controller="Home" class="d-flex mb-3">
-        <input type="text" name="username" class="form-control me-2" placeholder="Search by username..." required />
-        <button type="submit" class="btn btn-primary">Search</button>
-    </form>
-
-@model List<ChatApp.Models.User>
-
-    @if (Model != null && Model.Any())
-    {
-        <ul class="list-group">
-            @foreach (var user in Model)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>@user.FirstName @user.LastName</span>
-                    <button class="btn btn-outline-success btn-sm sendRequestBtn" data-userid="@user.Id">Add Friend</button>
-                </li>
-            }
-        </ul>
-    }
-    else if (Model != null)
-    {
-        <p>No users found.</p>
-    }
-}
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
