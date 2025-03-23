@@ -10,13 +10,11 @@
 
     @if (User.Identity?.IsAuthenticated ?? false)
     {
-        <h3 class="cyan-text">Find New Friends</h3>
-
         <div class="search-section">
+            <h3 class="find-friends">Find New Friends</h3>
             <form method="get" asp-action="Search" asp-controller="Home" class="d-flex mb-3">
-                <input type="text" name="username" class="form-control me-2 search-input"
-                       placeholder="Search by username..." required />
-                <button type="submit" class="btn btn-primary">Search</button>
+                <input type="text" name="username" class="search-input" placeholder="Search by username..." required />
+                <button type="submit" class="btn">Search</button>
             </form>
         </div>
 
@@ -31,7 +29,7 @@
                     {
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <span>@user.FirstName @user.LastName</span>
-                            <button class="btn btn-outline-success btn-sm sendRequestBtn" data-userid="@user.Id">
+                            <button class="btn sendRequestBtn" data-userid="@user.Id">
                                 Add Friend
                             </button>
                         </li>
