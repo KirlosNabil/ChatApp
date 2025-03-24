@@ -28,7 +28,9 @@ namespace ChatApp.Controllers
             var users = new List<User>();
             var sentRequestUserIds = _dbContext.FriendRequests
             .Where(fr => (fr.SenderId == userId || fr.ReceiverId == userId)
-            && fr.Status == FriendRequestStatus.Pending || fr.Status == FriendRequestStatus.Sent || fr.Status == FriendRequestStatus.Accepted)
+                        && (fr.Status == FriendRequestStatus.Pending
+                            || fr.Status == FriendRequestStatus.Sent
+                            || fr.Status == FriendRequestStatus.Accepted))
             .Select(fr => fr.SenderId == userId ? fr.ReceiverId : fr.SenderId)
             .ToHashSet();
             if (names.Length == 1)

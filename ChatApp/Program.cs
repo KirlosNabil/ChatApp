@@ -17,6 +17,7 @@ namespace ChatApp
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
+
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -27,21 +28,21 @@ namespace ChatApp
             .AddDefaultTokenProviders()
             .AddDefaultUI();
 
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.Name = "ChatAppCookie";
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                options.Cookie.SameSite = SameSiteMode.Lax;
+            });
+
             builder.Services.AddSignalR();
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
 
             var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseMigrationsEndPoint();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
-            }
+            app.UseMigrationsEndPoint();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -51,7 +52,6 @@ namespace ChatApp
             app.UseAuthorization();
 
             app.MapHub<ChatHub>("/chatHub");
-
             app.MapHub<FriendRequestHub>("/friendRequestHub");
 
             app.MapRazorPages();
