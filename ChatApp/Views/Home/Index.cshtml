@@ -56,7 +56,9 @@
 
         notificationConnection.on("NotifyFriendRequest", function (pendingRequestsCount) {
             const counterElement = document.getElementById("friendRequestCounter");
-            if (counterElement) {
+            if(counterElement)
+            {
+                counterElement.style.display = "inline";
                 counterElement.innerText = pendingRequestsCount;
             }
         });

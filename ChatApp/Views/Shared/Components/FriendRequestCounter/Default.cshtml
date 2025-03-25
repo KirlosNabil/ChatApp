@@ -2,7 +2,13 @@
 
 @if (Model > 0)
 {
-    <span id="friendRequestCounter" class="badge bg-danger ms-1">
+    <span id="friendRequestCounter" class="badge bg-danger ms-1" style="display: inline;">
+        @Model
+    </span>
+}
+else
+{
+    <span id="friendRequestCounter" class="badge bg-danger ms-1" style="display: none;">
         @Model
     </span>
 }

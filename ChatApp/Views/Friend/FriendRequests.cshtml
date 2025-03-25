@@ -75,6 +75,14 @@
                                 <span>${contentElement.querySelector('span').textContent}</span>
                                 <span class="${textClass} ms-3">${action === 'Accept' ? 'Accepted' : 'Rejected'}</span>
                             `;
+                        const counterElement = document.getElementById("friendRequestCounter");
+                        if (counterElement) {
+                            counterElement.innerText = counterElement.innerText - 1;
+                            if(counterElement.innerText == 0)
+                            {
+                                counterElement.style.display = "none";
+                            }
+                        }
                     }
                 })
                 .catch(error => console.error('Error:', error));
