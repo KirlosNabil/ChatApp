@@ -50,7 +50,21 @@
             .withUrl("/friendRequestHub")
             .build();
 
-        friendRequestConnection.start().then(function () {
+        var notificationConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/notificationHub")
+            .build();
+
+        notificationConnection.on("NotifyFriendRequest", function (pendingRequestsCount) {
+            const counterElement = document.getElementById("friendRequestCounter");
+            if (counterElement) {
+                counterElement.innerText = pendingRequestsCount;
+            }
+        });
+
+        Promise.all([
+            friendRequestConnection.start(),
+            notificationConnection.start()
+        ]).then(function () {
             const sendRequestButtons = document.querySelectorAll(".sendRequestBtn");
 
             sendRequestButtons.forEach(button => {
@@ -62,8 +76,11 @@
                     button.innerText = "Request Sent";
 
                     friendRequestConnection.invoke("SendFriendRequest", receiverId)
+                        .then(function () {
+                            notificationConnection.invoke("FriendRequestNotification", receiverId);
+                        })
                         .catch(function (err) {
-                            console.error(err.toString());
+                            console.error("Friend request error:", err.toString());
                             button.disabled = false;
                             button.innerText = "Add Friend";
                         });

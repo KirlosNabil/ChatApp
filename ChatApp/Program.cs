@@ -40,6 +40,8 @@ namespace ChatApp
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
 
+            builder.Services.AddHttpContextAccessor();
+
             var app = builder.Build();
 
             app.UseMigrationsEndPoint();
@@ -53,6 +55,7 @@ namespace ChatApp
 
             app.MapHub<ChatHub>("/chatHub");
             app.MapHub<FriendRequestHub>("/friendRequestHub");
+            app.MapHub<NotificationHub>("/notificationHub");
 
             app.MapRazorPages();
 

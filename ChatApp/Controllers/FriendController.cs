@@ -69,7 +69,7 @@ namespace ChatApp.Controllers
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var requests = _dbContext.FriendRequests
-            .Where(f => f.SenderId == userId && f.ReceiverId == receiverId)
+            .Where(f => f.SenderId == userId && f.ReceiverId == receiverId && f.Status == FriendRequestStatus.Pending)
             .ToList();
 
             _dbContext.FriendRequests.RemoveRange(requests);
@@ -110,7 +110,7 @@ namespace ChatApp.Controllers
             sender.FriendList.Add(user.Id);
 
             FriendRequest friendRequest = _dbContext.FriendRequests
-                .Where(f => f.SenderId == id && f.ReceiverId == userId)
+                .Where(f => f.SenderId == id && f.ReceiverId == userId && f.Status == FriendRequestStatus.Pending)
                 .FirstOrDefault();
             friendRequest.Status = FriendRequestStatus.Accepted;
             _dbContext.FriendRequests.Update(friendRequest);
@@ -126,7 +126,7 @@ namespace ChatApp.Controllers
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             FriendRequest friendRequest = _dbContext.FriendRequests
-                .Where(f => f.SenderId == id && f.ReceiverId == userId)
+                .Where(f => f.SenderId == id && f.ReceiverId == userId && f.Status == FriendRequestStatus.Pending)
                 .FirstOrDefault();
             friendRequest.Status = FriendRequestStatus.Rejected;
             _dbContext.FriendRequests.Update(friendRequest);
