@@ -4,7 +4,12 @@
     ViewData["Title"] = "Friend Requests";
 }
 
-<h2 class="mt-4">Friend Requests</h2>
+<div class="d-flex align-items-center justify-content-between mt-4 mb-3">
+    <h2>Friend Requests</h2>
+    <a class="btn btn-primary btn-sm" asp-controller="Friend" asp-action="SentRequests">
+        Sent Requests
+    </a>
+</div>
 
 <ul class="list-group" id="requestsList">
     @if (Model.Any())
@@ -15,8 +20,8 @@
                 <div id="content-@request.SenderId" class="d-flex w-100 justify-content-between">
                     <span>@request.SenderFirstName @request.SenderLastName</span>
                     <div>
-                        <button class="btn btn-success btn-sm ms-2" onclick="handleResponse('@request.SenderId', 'Accept', 'text-success')">Accept</button>
-                        <button class="btn btn-danger btn-sm ms-1" onclick="handleResponse('@request.SenderId', 'Reject', 'text-danger')">Reject</button>
+                        <button class="btn btn-blue btn-sm ms-2" onclick="handleResponse('@request.SenderId', 'Accept', 'text-success')">Accept</button>
+                        <button class="btn btn-grey btn-sm ms-1" onclick="handleResponse('@request.SenderId', 'Reject', 'text-danger')">Reject</button>
                     </div>
                 </div>
             </li>
@@ -35,6 +40,11 @@
             .build();
 
         connection.on("NewFriendRequest", function (senderId, firstname, lastname) {
+            const counterElement = document.getElementById("friendRequestCounter");
+            if (counterElement) {
+                counterElement.style.display = "inline";
+                counterElement.innerText = parseInt(counterElement.innerText) + 1;
+            }
             document.getElementById("noRequestsMessage").style.display = "none";
 
             const requestsList = document.getElementById("requestsList");
@@ -46,8 +56,8 @@
                         <div id="content-${senderId}" class="d-flex w-100 justify-content-between">
                             <span>${firstname} ${lastname}</span>
                             <div>
-                                <button class="btn btn-success btn-sm ms-2" onclick="handleResponse('${senderId}', 'Accept', 'text-success')">Accept</button>
-                                <button class="btn btn-danger btn-sm ms-1" onclick="handleResponse('${senderId}', 'Reject', 'text-danger')">Reject</button>
+                                <button class="btn btn-blue btn-sm ms-2" onclick="handleResponse('${senderId}', 'Accept', 'text-success')">Accept</button>
+                                <button class="btn btn-grey btn-sm ms-1" onclick="handleResponse('${senderId}', 'Reject', 'text-danger')">Reject</button>
                             </div>
                         </div>
                     `;
@@ -77,7 +87,7 @@
                             `;
                         const counterElement = document.getElementById("friendRequestCounter");
                         if (counterElement) {
-                            counterElement.innerText = counterElement.innerText - 1;
+                            counterElement.innerText = parseInt(counterElement.innerText) - 1;
                             if(counterElement.innerText == 0)
                             {
                                 counterElement.style.display = "none";

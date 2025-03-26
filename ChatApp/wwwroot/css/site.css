@@ -152,16 +152,37 @@ footer {
     transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
 }
 
-    .btn:hover {
-        background-color: #00A5C3;
-        color: #FFFFFF !important;
-        transform: scale(1.05);
-    }
+.btn:hover {
+    background-color: #00A5C3;
+    color: #FFFFFF !important;
+    transform: scale(1.05);
+}
 
-    .btn:active {
-        background-color: #008BA3 !important;
-        color: #FFFFFF !important;
-    }
+.btn:active {
+    background-color: #008BA3 !important;
+    color: #FFFFFF !important;
+}
+
+
+.btn.btn-grey {
+    background-color: #6c757d !important;
+    color: #fff !important;
+    border: none;
+}
+
+.btn.btn-grey:hover {
+    background-color: #5a6268 !important;
+}
+
+.btn.btn-blue {
+    background-color: #007BFF !important;
+    color: #FFFFFF !important;
+    border: none;
+}
+
+.btn.btn-blue:hover {
+    background-color: #0069D9 !important;
+}
 
 #chatList {
     background-color: #37474F;
