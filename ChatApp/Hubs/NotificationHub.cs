@@ -25,7 +25,20 @@ namespace ChatApp.Hubs
                     int pendingRequestsCount = _dbContext.FriendRequests
                         .Count(u => u.ReceiverId == receiverId 
                     && u.Status == FriendRequestStatus.Pending);
-                    await Clients.User(receiverId).SendAsync("NotifyFriendRequest", pendingRequestsCount);
+                    string notification = $"{sender.FirstName} {sender.LastName} sent you a friend request!";
+                    Notification n = new Notification()
+                    {
+                        UserId = receiverId,
+                        Content = notification,
+                        Date = DateTime.Now,
+                        isRead = false
+                    };
+                    _dbContext.Notifications.Add(n);
+                    _dbContext.SaveChanges();
+                    int notificationCount = _dbContext.Notifications
+                    .Count(u => u.UserId == receiverId
+                                 && u.isRead == false);
+                    await Clients.User(receiverId).SendAsync("NotifyFriendRequest", pendingRequestsCount, n, notificationCount);
                 }
             }
             catch (Exception ex) { }

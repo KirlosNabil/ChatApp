@@ -1,0 +1,24 @@
+﻿@model List<ChatApp.Models.Notification>
+
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<h2 class="mt-4 mb-3">Notifications</h2>
+
+<ul class="list-group" id="notificationsList">
+    @if (Model.Any())
+    {
+        foreach (var notification in Model)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center" id="notification-@notification.Id">
+                <div>
+                    <span>@notification.Content</span>
+                    <small class="text-muted d-block">@notification.Date.ToString("yyyy-MM-dd HH:mm")</small>
+                </div>
+            </li>
+        }
+    }
+</ul>
+
+<p id="noNotificationsMessage" style="display: @(Model.Any() ? "none" : "block");">No notifications found.</p>

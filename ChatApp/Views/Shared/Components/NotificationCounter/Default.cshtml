@@ -1,0 +1,18 @@
+﻿@model int
+
+@if (Model > 0)
+{
+    <span class="notification-container">
+        <span id="notificationCounter" class="badge bg-danger badge-notification" style="display: inline;">
+            @Model
+        </span>
+    </span>
+}
+else
+{
+    <span class="notification-container">
+        <span id="notificationCounter" class="badge bg-danger badge-notification" style="display: none;">
+            @Model
+        </span>
+    </span>
+}

@@ -12,5 +12,6 @@ namespace ChatApp.Data
         }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<FriendRequest> FriendRequests { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
     }
 }

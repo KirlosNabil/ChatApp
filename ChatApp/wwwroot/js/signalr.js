@@ -6,11 +6,36 @@ var notificationConnection = new signalR.HubConnectionBuilder()
     .withUrl("/notificationHub")
     .build();
 
-notificationConnection.on("NotifyFriendRequest", function (pendingRequestsCount) {
-    const counterElement = document.getElementById("friendRequestCounter");
-    if (counterElement) {
-        counterElement.style.display = "inline";
-        counterElement.innerText = pendingRequestsCount;
+notificationConnection.on("NotifyFriendRequest", function (pendingRequestsCount, notification, notificationCount) {
+    const friendRequestCounterElement = document.getElementById("friendRequestCounter");
+    if (friendRequestCounterElement) {
+        friendRequestCounterElement.style.display = "inline";
+        friendRequestCounterElement.innerText = pendingRequestsCount;
+    }
+
+    const notificationCounterElement = document.getElementById("notificationCounter");
+    if (notificationCounterElement) {
+        notificationCounterElement.style.display = "inline";
+        notificationCounterElement.innerText = notificationCount;
+    }
+    const notificationsList = document.getElementById("notificationsList");
+    const noNotificationsMessage = document.getElementById("noNotificationsMessage");
+
+    if (notificationsList) {
+        const notificationElement = document.createElement("li");
+        notificationElement.className = "list-group-item d-flex justify-content-between align-items-center";
+        notificationElement.id = `notification-${notification.id}`;
+        notificationElement.innerHTML = `
+            <div>
+                <span>${notification.content}</span>
+                <small class="text-muted d-block">${new Date(notification.date).toLocaleString()}</small>
+            </div>
+        `;
+
+        notificationsList.appendChild(notificationElement);
+        if (noNotificationsMessage) {
+            noNotificationsMessage.style.display = "none";
+        }
     }
 });
 
@@ -49,7 +74,7 @@ Promise.all([
     friendConnection.start(),
     notificationConnection.start()
 ]).then(function () {
-    console.log("SignalR connections established.");
+
 }).catch(function (err) {
-    console.error("Error establishing SignalR connections:", err.toString());
+    console.error(err.toString());
 });
