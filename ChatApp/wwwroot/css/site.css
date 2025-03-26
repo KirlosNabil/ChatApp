@@ -185,10 +185,9 @@ footer {
     background-color: #0069D9 !important;
 }
 
-#chatList {
-    background-color: #37474F;
-    border-radius: 12px;
-    padding: 10px;
+#chatList{
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 .list-group-item {
@@ -332,4 +331,19 @@ footer {
 .icon-image {
     width: 24px;
     height: 24px;
+}
+
+#notificationsList {
+    max-height: 700px;
+    width: 100%;
+    max-width: 5000px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 0;
+    background-color: #333;
+}
+
+#notificationsList .list-group-item {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 10px;
 }

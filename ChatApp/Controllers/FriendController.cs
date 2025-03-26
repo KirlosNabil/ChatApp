@@ -138,7 +138,7 @@ namespace ChatApp.Controllers
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            User user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
+            User user = _dbContext.Users.AsNoTracking().FirstOrDefault(u => u.Id == userId);
             List<FriendViewModel> friends = new List<FriendViewModel>();
             foreach (string friend in user.FriendList)
             {

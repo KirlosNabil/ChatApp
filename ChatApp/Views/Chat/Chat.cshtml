@@ -6,6 +6,7 @@
     <meta charset="utf-8" />
     <title>Chat - @Model.friendName</title>
     <link rel="stylesheet" href="~/css/chat.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
     <div class="chat-container">
@@ -27,36 +28,36 @@
             <button id="sendButton" disabled>Send</button>
         </div>
     </div>
-
-    @section Scripts {
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
-        <script>
-            var connection = new signalR.HubConnectionBuilder()
-                .withUrl("/chatHub")
-                .build();
-
-            connection.on("ReceiveMessage", function (sender, name, message) {
-                var chatBox = document.getElementById("chatBox");
-                var isMine = name !== "@Model.friendName";
-                var className = isMine ? "mine" : "other";
-                chatBox.innerHTML += '<div class="chat-message ' + className + '"><p><b>' + name + ':</b> ' + message + '</p></div>';
-                chatBox.scrollTop = chatBox.scrollHeight;
-            });
-
-            connection.start().then(function () {
-                document.getElementById("sendButton").disabled = false;
-            }).catch(function (err) {
-                console.error(err.toString());
-            });
-
-            document.getElementById("sendButton").addEventListener("click", function () {
-                var message = document.getElementById("messageInput").value;
-                if (message.trim() === "") return;
-                var receiverId = "@Model.friendId";
-                connection.invoke("SendMessage", receiverId, message);
-                document.getElementById("messageInput").value = "";
-            });
-        </script>
-    }
 </body>
 </html>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .build();
+
+        connection.on("ReceiveMessage", function (sender, name, message) {
+            var chatBox = document.getElementById("chatBox");
+            var isMine = name !== "@Model.friendName";
+            var className = isMine ? "mine" : "other";
+            chatBox.innerHTML += '<div class="chat-message ' + className + '"><p><b>' + name + ':</b> ' + message + '</p></div>';
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        connection.start().then(function () {
+            document.getElementById("sendButton").disabled = false;
+        }).catch(function (err) {
+            console.error(err.toString());
+        });
+
+        document.getElementById("sendButton").addEventListener("click", function () {
+            var message = document.getElementById("messageInput").value;
+            if (message.trim() === "") return;
+            var receiverId = "@Model.friendId";
+            connection.invoke("SendMessage", receiverId, message);
+            document.getElementById("messageInput").value = "";
+        });
+    </script>
+}

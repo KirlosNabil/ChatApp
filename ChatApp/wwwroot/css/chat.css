@@ -10,7 +10,8 @@ html, body {
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 80vh;
+    width: 90%;
     max-width: 800px;
     margin: 0 auto;
     border: 1px solid #444;
@@ -32,10 +33,10 @@ html, body {
     word-wrap: break-word;
 }
 
-    .chat-message p {
-        font-size: 1.1rem;
-        margin: 0;
-    }
+.chat-message p {
+    font-size: 1.1rem;
+    margin: 0;
+}
 
 .mine {
     background-color: #00BCD4;
@@ -52,10 +53,13 @@ html, body {
 }
 
 .input-container {
-    position: absolute;
+    position: fixed;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: 0px;
+    width: 90%;
+    max-width: 800px;
+    margin: 0 auto;
     display: flex;
     justify-content: center;
     padding: 0.75rem;
@@ -72,7 +76,7 @@ html, body {
     flex-direction: column;
     gap: 0.8rem;
     background-color: #2E2E2E;
-    padding-bottom: 0;
+    padding-bottom: 5rem;
 }
 
 #messageInput {
@@ -97,16 +101,12 @@ html, body {
     cursor: pointer;
 }
 
-    #sendButton:hover {
-        background-color: #00A5C3;
-        color: #FFFFFF !important;
-        transform: scale(1.05);
-    }
-    #sendButton:active  {
-        background-color: #008BA3 !important;
-        color: #FFFFFF !important;
-    }
-
-.footer {
-    display: none !important;
+#sendButton:hover {
+    background-color: #00A5C3;
+    color: #FFFFFF !important;
+    transform: scale(1.05);
+}
+#sendButton:active  {
+    background-color: #008BA3 !important;
+    color: #FFFFFF !important;
 }

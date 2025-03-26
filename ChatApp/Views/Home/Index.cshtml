@@ -51,70 +51,74 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script>
-        var friendConnection = new signalR.HubConnectionBuilder()
-            .withUrl("/friendHub")
-            .build();
+        if (@Json.Serialize(User.Identity.IsAuthenticated)) {
+            var friendConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/friendHub")
+                .build();
 
-        var notificationConnection = new signalR.HubConnectionBuilder()
-            .withUrl("/notificationHub")
-            .build();
+            var notificationConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/notificationHub")
+                .build();
 
-        Promise.all([
-            friendConnection.start(),
-            notificationConnection.start()
-        ]).then(function () {
-            const sendRequestButtons = document.querySelectorAll(".sendRequestBtn");
+            Promise.all([
+                friendConnection.start(),
+                notificationConnection.start()
+            ]).then(function () {
+                const sendRequestButtons = document.querySelectorAll(".sendRequestBtn");
 
-            sendRequestButtons.forEach(button => {
-                button.disabled = false;
+                sendRequestButtons.forEach(button => {
+                    button.disabled = false;
 
-                button.addEventListener("click", function () {
-                    var receiverId = button.getAttribute("data-userid");
-                    button.disabled = true;
-                    button.innerText = "Request Sent";
+                    button.addEventListener("click", function () {
+                        var receiverId = button.getAttribute("data-userid");
+                        button.disabled = true;
+                        button.innerText = "Request Sent";
 
-                    friendConnection.invoke("SendFriendRequest", receiverId)
-                        .then(function () {
-                            notificationConnection.invoke("FriendRequestNotification", receiverId);
-                        })
-                        .catch(function (err) {
-                            console.error("Friend request error:", err.toString());
-                            button.disabled = false;
-                            button.innerText = "Add Friend";
-                        });
-                });
-            });
-
-            friendConnection.invoke("GetOnlineFriends")
-                .then(function (onlineFriends) {
-                    const activeFriendsList = document.getElementById("activeFriendsList");
-                    activeFriendsList.innerHTML = '';
-
-                    onlineFriends.forEach(function (friend) {
-                        const friendElement = document.createElement("li");
-                        friendElement.id = `friend-${friend.friendId}`;
-                        friendElement.innerHTML = `
-                        <div class="friend-container">
-                            <div class="friend-info">
-                                <span>${friend.firstName} ${friend.lastName}</span>
-                                <div class="online-status">
-                                    <div class="online-dot"></div>
-                                    <span>Online</span>
-                                </div>
-                            </div>
-                            <button class="message-btn" onclick="window.location.href='/Chat/Chat?friendId=${friend.friendId}'">
-                                <img src="/images/message-icon.png" alt="Message" class="icon-image"/>
-                            </button>
-                        </div>
-                        `;
-                        activeFriendsList.appendChild(friendElement);
+                        friendConnection.invoke("SendFriendRequest", receiverId)
+                            .then(function () {
+                                notificationConnection.invoke("FriendRequestNotification", receiverId);
+                            })
+                            .catch(function (err) {
+                                console.error("Friend request error:", err.toString());
+                                button.disabled = false;
+                                button.innerText = "Add Friend";
+                            });
                     });
-                })
-                .catch(function (err) {
-                    console.error(err.toString());
                 });
-        }).catch(function (err) {
-            console.error(err.toString());
-        });
+
+                friendConnection.invoke("GetOnlineFriends")
+                    .then(function (onlineFriends) {
+                        const activeFriendsList = document.getElementById("activeFriendsList");
+                        activeFriendsList.innerHTML = '';
+
+                        onlineFriends.forEach(function (friend) {
+                            if (!document.getElementById(`active-friend-${friend.friendId}`)) {
+                                const friendElement = document.createElement("li");
+                                friendElement.id = `active-friend-${friend.friendId}`;
+                                friendElement.innerHTML = `
+                                <div class="friend-container">
+                                    <div class="friend-info">
+                                        <span>${friend.firstName} ${friend.lastName}</span>
+                                        <div class="online-status">
+                                            <div class="online-dot"></div>
+                                            <span>Online</span>
+                                        </div>
+                                    </div>
+                                            <button class="message-btn" onclick="window.location.href='/Chat/Chat?friendId=${friend.friendId}'">
+                                        <img src="/images/message-icon.png" alt="Message" class="icon-image"/>
+                                    </button>
+                                </div>
+                            `;
+                                activeFriendsList.appendChild(friendElement);
+                            }
+                        });
+                    })
+                    .catch(function (err) {
+                        console.error(err.toString());
+                    });
+            }).catch(function (err) {
+                console.error(err.toString());
+            });
+        }
     </script>
 }
