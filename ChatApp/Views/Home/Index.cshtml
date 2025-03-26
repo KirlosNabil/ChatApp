@@ -59,34 +59,6 @@
             .withUrl("/notificationHub")
             .build();
 
-        notificationConnection.on("NotifyFriendRequest", function (pendingRequestsCount) {
-            const counterElement = document.getElementById("friendRequestCounter");
-            if (counterElement) {
-                counterElement.style.display = "inline";
-                counterElement.innerText = pendingRequestsCount;
-            }
-        });
-
-        friendConnection.on("FriendOnline", function (userId, firstName, lastName) {
-            const activeFriendsList = document.getElementById("activeFriendsList");
-
-            if (!document.getElementById(`friend-${userId}`)) {
-                const friendElement = document.createElement("li");
-                friendElement.id = `friend-${userId}`;
-                friendElement.className = "list-group-item";
-                friendElement.innerText = `${firstName} ${lastName}`;
-
-                activeFriendsList.appendChild(friendElement);
-            }
-        });
-
-        friendConnection.on("FriendOffline", function (userId) {
-            const friendElement = document.getElementById(`friend-${userId}`);
-            if (friendElement) {
-                friendElement.remove();
-            }
-        });
-
         Promise.all([
             friendConnection.start(),
             notificationConnection.start()
@@ -121,9 +93,20 @@
                     onlineFriends.forEach(function (friend) {
                         const friendElement = document.createElement("li");
                         friendElement.id = `friend-${friend.friendId}`;
-                        friendElement.className = "list-group-item";
-                        friendElement.innerText = `${friend.firstName} ${friend.lastName}`;
-
+                        friendElement.innerHTML = `
+                        <div class="friend-container">
+                            <div class="friend-info">
+                                <span>${friend.firstName} ${friend.lastName}</span>
+                                <div class="online-status">
+                                    <div class="online-dot"></div>
+                                    <span>Online</span>
+                                </div>
+                            </div>
+                            <button class="message-btn" onclick="window.location.href='/Chat/Chat?friendId=${friend.friendId}'">
+                                <img src="/images/message-icon.png" alt="Message" class="icon-image"/>
+                            </button>
+                        </div>
+                        `;
                         activeFriendsList.appendChild(friendElement);
                     });
                 })

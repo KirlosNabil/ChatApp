@@ -68,7 +68,7 @@ namespace ChatApp.Hubs
                     {
                         if (_connectedUsers.TryGetValue(friend, out var friendConnectionId))
                         {
-                            await Clients.Client(friendConnectionId).SendAsync("FriendOffline", userId, u.FirstName, u.LastName);
+                            await Clients.Client(friendConnectionId).SendAsync("FriendOffline", userId);
                         }
                     }
                     _connectedUsers.TryRemove(userId, out _);

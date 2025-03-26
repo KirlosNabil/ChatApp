@@ -256,7 +256,6 @@ footer {
     background-color: #2b2b2b;
     color: #fff;
     padding: 10px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
 #activeFriendsList {
@@ -280,3 +279,57 @@ footer {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
+
+.friend-container {
+    background-color: #455A64;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.3s ease;
+}
+
+.friend-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.online-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.online-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #4CAF50;
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(76, 175, 80, 0.8);
+}
+
+.message-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+    .message-btn:hover .icon-image {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+
+.icon-image {
+    width: 24px;
+    height: 24px;
+}
