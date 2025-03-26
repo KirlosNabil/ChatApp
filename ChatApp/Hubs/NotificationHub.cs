@@ -43,5 +43,32 @@ namespace ChatApp.Hubs
             }
             catch (Exception ex) { }
         }
+        public async Task AcceptFriendRequestNotification(string receiverId)
+        {
+            try
+            {
+                string senderId = Context.UserIdentifier;
+                User sender = await _dbContext.Users.FindAsync(senderId);
+                User receiver = await _dbContext.Users.FindAsync(receiverId);
+                if (receiver != null)
+                {
+                    string notification = $"{sender.FirstName} {sender.LastName} accepted your friend request!";
+                    Notification n = new Notification()
+                    {
+                        UserId = receiverId,
+                        Content = notification,
+                        Date = DateTime.Now,
+                        isRead = false
+                    };
+                    _dbContext.Notifications.Add(n);
+                    _dbContext.SaveChanges();
+                    int notificationCount = _dbContext.Notifications
+                    .Count(u => u.UserId == receiverId
+                                 && u.isRead == false);
+                    await Clients.User(receiverId).SendAsync("NotifyAcceptedFriendRequest", n, notificationCount);
+                }
+            }
+            catch (Exception ex) { }
+        }
     }
 }

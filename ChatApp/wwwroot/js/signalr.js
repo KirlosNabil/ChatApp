@@ -39,6 +39,33 @@ notificationConnection.on("NotifyFriendRequest", function (pendingRequestsCount,
     }
 });
 
+notificationConnection.on("NotifyAcceptedFriendRequest", function (notification, notificationCount) {
+    const notificationCounterElement = document.getElementById("notificationCounter");
+    if (notificationCounterElement) {
+        notificationCounterElement.style.display = "inline";
+        notificationCounterElement.innerText = notificationCount;
+    }
+    const notificationsList = document.getElementById("notificationsList");
+    const noNotificationsMessage = document.getElementById("noNotificationsMessage");
+
+    if (notificationsList) {
+        const notificationElement = document.createElement("li");
+        notificationElement.className = "list-group-item d-flex justify-content-between align-items-center";
+        notificationElement.id = `notification-${notification.id}`;
+        notificationElement.innerHTML = `
+            <div>
+                <span>${notification.content}</span>
+                <small class="text-muted d-block">${new Date(notification.date).toLocaleString()}</small>
+            </div>
+        `;
+
+        notificationsList.appendChild(notificationElement);
+        if (noNotificationsMessage) {
+            noNotificationsMessage.style.display = "none";
+        }
+    }
+});
+
 friendConnection.on("FriendOnline", function (userId, firstName, lastName) {
     const activeFriendsList = document.getElementById("activeFriendsList");
 

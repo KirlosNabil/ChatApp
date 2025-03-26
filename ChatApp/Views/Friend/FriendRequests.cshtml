@@ -35,11 +35,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 
     <script>
-        const connection = new signalR.HubConnectionBuilder()
+        var friendConnection = new signalR.HubConnectionBuilder()
             .withUrl("/friendHub")
             .build();
 
-        connection.on("NewFriendRequest", function (senderId, firstname, lastname) {
+        var notificationConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/notificationHub")
+            .build();
+
+        friendConnection.on("NewFriendRequest", function (senderId, firstname, lastname) {
             const counterElement = document.getElementById("friendRequestCounter");
             if (counterElement) {
                 counterElement.style.display = "inline";
@@ -65,11 +69,14 @@
             requestsList.appendChild(li);
         });
 
-        connection.start().then(function () {
+        friendConnection.start().then(function () {
         }).catch(function (err) {
             console.error(err.toString());
         });
-
+        notificationConnection.start().then(function () {
+        }).catch(function (err) {
+            console.error(err.toString());
+        });
         function handleResponse(requestId, action, textClass) {
             fetch(`/Friend/${action}FriendRequest`, {
                 method: 'POST',
@@ -92,6 +99,12 @@
                             {
                                 counterElement.style.display = "none";
                             }
+                        }
+                        if (action === 'Accept') {
+                            notificationConnection.invoke("AcceptFriendRequestNotification", requestId)
+                                .catch(function (err) {
+                                    
+                                });
                         }
                     }
                 })
