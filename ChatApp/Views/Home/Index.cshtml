@@ -18,6 +18,11 @@
             </form>
         </div>
 
+        <div class="active-friends-box">
+            <h3 class="active-friends-header">Active Friends</h3>
+            <ul class="list-group" id="activeFriendsList"></ul>
+        </div>
+
     @model List<ChatApp.Models.User>
 
         @if (Model != null && Model.Any())
@@ -46,7 +51,7 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script>
-        var friendRequestConnection = new signalR.HubConnectionBuilder()
+        var friendConnection = new signalR.HubConnectionBuilder()
             .withUrl("/friendHub")
             .build();
 
@@ -56,15 +61,34 @@
 
         notificationConnection.on("NotifyFriendRequest", function (pendingRequestsCount) {
             const counterElement = document.getElementById("friendRequestCounter");
-            if(counterElement)
-            {
+            if (counterElement) {
                 counterElement.style.display = "inline";
                 counterElement.innerText = pendingRequestsCount;
             }
         });
 
+        friendConnection.on("FriendOnline", function (userId, firstName, lastName) {
+            const activeFriendsList = document.getElementById("activeFriendsList");
+
+            if (!document.getElementById(`friend-${userId}`)) {
+                const friendElement = document.createElement("li");
+                friendElement.id = `friend-${userId}`;
+                friendElement.className = "list-group-item";
+                friendElement.innerText = `${firstName} ${lastName}`;
+
+                activeFriendsList.appendChild(friendElement);
+            }
+        });
+
+        friendConnection.on("FriendOffline", function (userId) {
+            const friendElement = document.getElementById(`friend-${userId}`);
+            if (friendElement) {
+                friendElement.remove();
+            }
+        });
+
         Promise.all([
-            friendRequestConnection.start(),
+            friendConnection.start(),
             notificationConnection.start()
         ]).then(function () {
             const sendRequestButtons = document.querySelectorAll(".sendRequestBtn");
@@ -77,7 +101,7 @@
                     button.disabled = true;
                     button.innerText = "Request Sent";
 
-                    friendRequestConnection.invoke("SendFriendRequest", receiverId)
+                    friendConnection.invoke("SendFriendRequest", receiverId)
                         .then(function () {
                             notificationConnection.invoke("FriendRequestNotification", receiverId);
                         })
@@ -88,6 +112,24 @@
                         });
                 });
             });
+
+            friendConnection.invoke("GetOnlineFriends")
+                .then(function (onlineFriends) {
+                    const activeFriendsList = document.getElementById("activeFriendsList");
+                    activeFriendsList.innerHTML = '';
+
+                    onlineFriends.forEach(function (friend) {
+                        const friendElement = document.createElement("li");
+                        friendElement.id = `friend-${friend.friendId}`;
+                        friendElement.className = "list-group-item";
+                        friendElement.innerText = `${friend.firstName} ${friend.lastName}`;
+
+                        activeFriendsList.appendChild(friendElement);
+                    });
+                })
+                .catch(function (err) {
+                    console.error(err.toString());
+                });
         }).catch(function (err) {
             console.error(err.toString());
         });

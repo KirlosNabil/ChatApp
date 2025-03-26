@@ -2,6 +2,7 @@
 using System.Linq;
 using ChatApp.Data;
 using ChatApp.Models;
+using ChatApp.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,16 @@ namespace ChatApp.Hubs
                 if (userId != null)
                 {
                     _connectedUsers[userId] = Context.ConnectionId;
+
+                    User u = _dbContext.Users.FirstOrDefault(u => u.Id == userId); ;
+                    foreach (var friend in u.FriendList)
+                    {
+                        if (_connectedUsers.TryGetValue(friend, out var friendConnectionId))
+                        {
+                            await Clients.Client(friendConnectionId).SendAsync("FriendOnline", userId, u.FirstName, u.LastName);
+                        }
+                    }
+
                     List<FriendRequest> friendRequests = _dbContext.FriendRequests
                         .Where(u => u.ReceiverId == userId && u.Status == FriendRequestStatus.Sent).ToList();
                     foreach (var pendingRequest in friendRequests)
@@ -52,6 +63,14 @@ namespace ChatApp.Hubs
                 var userId = Context.UserIdentifier;
                 if (userId != null)
                 {
+                    User u = _dbContext.Users.FirstOrDefault(u => u.Id == userId); ;
+                    foreach (var friend in u.FriendList)
+                    {
+                        if (_connectedUsers.TryGetValue(friend, out var friendConnectionId))
+                        {
+                            await Clients.Client(friendConnectionId).SendAsync("FriendOffline", userId, u.FirstName, u.LastName);
+                        }
+                    }
                     _connectedUsers.TryRemove(userId, out _);
                 }
             }
@@ -89,6 +108,24 @@ namespace ChatApp.Hubs
             }
             catch (Exception ex){}
         }
-
+        public async Task<List<FriendViewModel>> GetOnlineFriends()
+        {
+            string userId = Context.UserIdentifier;
+            User user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
+            List<string> friends = user.FriendList.Where(_connectedUsers.ContainsKey).ToList();
+            List<FriendViewModel> ret = new List<FriendViewModel>();
+            foreach(var friend in friends)
+            {
+                User f = _dbContext.Users.FirstOrDefault(u => u.Id == friend);
+                FriendViewModel fvm = new FriendViewModel()
+                {
+                    FirstName = f.FirstName,
+                    LastName = f.LastName,
+                    FriendId = f.Id
+                };
+                ret.Add(fvm);
+            }
+            return ret;
+        }
     }
 }
