@@ -197,3 +197,30 @@ footer {
     color: #CFD8DC !important;
 }
 
+.icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 2px;
+    position: relative;
+    top: -5px;
+}
+.applogo {
+    width: 120px;
+    height: 30px;
+    position: relative;
+    
+}
+
+.badge-notification {
+    position: absolute;
+    top: -30px;
+    right: -10px;
+    font-size: 0.87rem;
+    padding: 2px 5px;
+    border-radius: 50%;
+}
+
+.notification-container {
+    position: relative;
+    display: inline-block;
+}

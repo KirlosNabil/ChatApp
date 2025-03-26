@@ -2,13 +2,17 @@
 
 @if (Model > 0)
 {
-    <span id="friendRequestCounter" class="badge bg-danger ms-1" style="display: inline;">
-        @Model
+    <span class="notification-container">
+        <span id="friendRequestCounter" class="badge bg-danger badge-notification" style="display: inline;">
+            @Model
+        </span>
     </span>
 }
 else
 {
-    <span id="friendRequestCounter" class="badge bg-danger ms-1" style="display: none;">
-        @Model
+    <span class="notification-container">
+        <span id="friendRequestCounter" class="badge bg-danger badge-notification" style="display: none;">
+            @Model
+        </span>
     </span>
 }
