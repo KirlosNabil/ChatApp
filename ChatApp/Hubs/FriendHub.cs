@@ -8,12 +8,12 @@ using Microsoft.Extensions.Logging;
 
 namespace ChatApp.Hubs
 {
-    public class FriendRequestHub : Hub
+    public class FriendHub : Hub
     {
         private readonly ApplicationDbContext _dbContext;
         private static ConcurrentDictionary<string, string> _connectedUsers = new ConcurrentDictionary<string, string>();
 
-        public FriendRequestHub(ApplicationDbContext dbContext)
+        public FriendHub(ApplicationDbContext dbContext)
         {
             this._dbContext = dbContext;
         }

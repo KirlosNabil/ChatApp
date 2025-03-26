@@ -47,7 +47,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script>
         var friendRequestConnection = new signalR.HubConnectionBuilder()
-            .withUrl("/friendRequestHub")
+            .withUrl("/friendHub")
             .build();
 
         var notificationConnection = new signalR.HubConnectionBuilder()

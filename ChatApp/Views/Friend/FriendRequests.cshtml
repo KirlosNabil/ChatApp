@@ -36,7 +36,7 @@
 
     <script>
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/friendRequestHub")
+            .withUrl("/friendHub")
             .build();
 
         connection.on("NewFriendRequest", function (senderId, firstname, lastname) {

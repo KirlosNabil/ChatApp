@@ -54,7 +54,7 @@ namespace ChatApp
             app.UseAuthorization();
 
             app.MapHub<ChatHub>("/chatHub");
-            app.MapHub<FriendRequestHub>("/friendRequestHub");
+            app.MapHub<FriendHub>("/friendHub");
             app.MapHub<NotificationHub>("/notificationHub");
 
             app.MapRazorPages();
