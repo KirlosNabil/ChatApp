@@ -51,7 +51,7 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script>
-        if (@Json.Serialize(User.Identity.IsAuthenticated)) {
+        
             var friendConnection = new signalR.HubConnectionBuilder()
                 .withUrl("/friendHub")
                 .build();
@@ -119,6 +119,6 @@
             }).catch(function (err) {
                 console.error(err.toString());
             });
-        }
+        
     </script>
 }
