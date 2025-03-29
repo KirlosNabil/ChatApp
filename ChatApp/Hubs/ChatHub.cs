@@ -33,8 +33,9 @@ namespace ChatApp.Hubs
                     foreach (var message in pendingMessages)
                     {
                         User sender = _dbContext.Users.FirstOrDefault(u => u.Id == message.SenderId);
-                        await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", message.SenderId, sender.FirstName + " " + sender.LastName, message.Message);
                         message.Delivered = true;
+                        await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", message.SenderId, sender.FirstName + " " + sender.LastName,
+                            message.Message, message.Id, message.Delivered, message.IsRead);
                     }
 
                     await _dbContext.SaveChangesAsync();
@@ -81,15 +82,18 @@ namespace ChatApp.Hubs
                 User sender = _dbContext.Users.FirstOrDefault(u => u.Id == senderId);
                 if (_connectedUsers.TryGetValue(receiverId, out var receiverConnectionId))
                 {
-                    await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", senderId, sender.FirstName + " " + sender.LastName, message);
                     newMessage.Delivered = true;
                     _dbContext.ChatMessages.Update(newMessage);
                     await _dbContext.SaveChangesAsync();
+                    await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", senderId, sender.FirstName + " " + sender.LastName, message,
+                        newMessage.Id, newMessage.Delivered, newMessage.IsRead);
+
                 }
 
                 if (_connectedUsers.TryGetValue(senderId, out var senderConnectionId))
                 {
-                    await Clients.Client(senderConnectionId).SendAsync("ReceiveMessage", senderId, "You", message);
+                    await Clients.Client(senderConnectionId).SendAsync("ReceiveMessage", senderId, "You", message, 
+                        newMessage.Id, newMessage.Delivered, newMessage.IsRead);
                 }
             }
             catch (Exception ex){}

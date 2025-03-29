@@ -22,7 +22,10 @@
                 <div class="chat-message @(isMine ? "mine" : "other")">
                     <p>
                         <b>@msg.Item2:</b> @msg.Item1.Message
+                        @if(isMine)
+                        {
                         <span class="message-status @status" id="status-@msg.Item1.Id"></span>
+                        }
                     </p>
                 </div>
             }
@@ -42,11 +45,22 @@
             .withUrl("/chatHub")
             .build();
 
-        connection.on("ReceiveMessage", function (sender, name, message) {
+        connection.on("ReceiveMessage", function (sender, name, message, messageId, isDelivered, isRead) {
             var chatBox = document.getElementById("chatBox");
             var isMine = name !== "@Model.friendName";
             var className = isMine ? "mine" : "other";
-            chatBox.innerHTML += '<div class="chat-message ' + className + '"><p><b>' + name + ':</b> ' + message + '</p></div>';
+
+            var status = isRead ? "read" : isDelivered ? "delivered" : "sent";
+            var statusSpan = isMine ? `<span class="message-status ${status}" id="status-${messageId}"></span>` : "";
+
+            chatBox.innerHTML += `
+                <div class="chat-message ${className}">
+                    <p>
+                               <b>${name}:</b> ${message} ${statusSpan}
+                    </p>
+                </div>
+            `;
+
             chatBox.scrollTop = chatBox.scrollHeight;
         });
 
