@@ -112,18 +112,21 @@ namespace ChatApp.Hubs
         {
             string userId = Context.UserIdentifier;
             User user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
-            List<string> friends = user.FriendList.Where(_connectedUsers.ContainsKey).ToList();
             List<FriendViewModel> ret = new List<FriendViewModel>();
-            foreach(var friend in friends)
+            if (user != null)
             {
-                User f = _dbContext.Users.FirstOrDefault(u => u.Id == friend);
-                FriendViewModel fvm = new FriendViewModel()
+                List<string> friends = user.FriendList.Where(_connectedUsers.ContainsKey).ToList();
+                foreach (var friend in friends)
                 {
-                    FirstName = f.FirstName,
-                    LastName = f.LastName,
-                    FriendId = f.Id
-                };
-                ret.Add(fvm);
+                    User f = _dbContext.Users.FirstOrDefault(u => u.Id == friend);
+                    FriendViewModel fvm = new FriendViewModel()
+                    {
+                        FirstName = f.FirstName,
+                        LastName = f.LastName,
+                        FriendId = f.Id
+                    };
+                    ret.Add(fvm);
+                }
             }
             return ret;
         }

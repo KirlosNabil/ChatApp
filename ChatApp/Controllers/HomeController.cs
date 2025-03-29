@@ -25,26 +25,73 @@ namespace ChatApp.Controllers
             }
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var names = username.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            var users = new List<User>();
-            var sentRequestUserIds = _dbContext.FriendRequests
+            var users = new List<UserViewModel>();
+            var requestsUserIds = _dbContext.FriendRequests
             .Where(fr => (fr.SenderId == userId || fr.ReceiverId == userId)
-                        && (fr.Status == FriendRequestStatus.Pending
-                            || fr.Status == FriendRequestStatus.Sent
-                            || fr.Status == FriendRequestStatus.Accepted))
+                        && (fr.Status != FriendRequestStatus.Rejected))
             .Select(fr => fr.SenderId == userId ? fr.ReceiverId : fr.SenderId)
             .ToHashSet();
+            List<User> usersWithRelation = new List<User>();
+            List<User> usersWithNoRelation = new List<User>();
             if (names.Length == 1)
             {
-                users  = _dbContext.Users.Where(u => u.FirstName.Contains(names[0])
+                usersWithRelation = _dbContext.Users.Where(u => u.FirstName.Contains(names[0])
                 && u.Id != userId
-                && !sentRequestUserIds.Contains(u.Id)).ToList();
+                && requestsUserIds.Contains(u.Id)).ToList();
+
+                usersWithNoRelation = _dbContext.Users.Where(u => u.FirstName.Contains(names[0])
+                && u.Id != userId
+                && !requestsUserIds.Contains(u.Id)).ToList();
             }
             else if (names.Length >= 2)
             {
-                users = _dbContext.Users.Where(u => u.FirstName.Contains(names[0])
+                usersWithRelation = _dbContext.Users.Where(u => u.FirstName.Contains(names[0])
                 && u.LastName.Contains(names[1])
                 && u.Id != userId
-                && !sentRequestUserIds.Contains(u.Id)).ToList();
+                && !requestsUserIds.Contains(u.Id)).ToList();
+
+                usersWithNoRelation = _dbContext.Users.Where(u => u.FirstName.Contains(names[0])
+                && u.LastName.Contains(names[1])
+                && u.Id != userId
+                && !requestsUserIds.Contains(u.Id)).ToList();
+            }
+            foreach (var user in usersWithRelation)
+            {
+                UserViewModel retUser = new UserViewModel()
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                };
+                var friendRequest = _dbContext.FriendRequests.FirstOrDefault(u => (u.SenderId == userId && u.ReceiverId == user.Id)
+                || (u.SenderId == user.Id && u.ReceiverId == userId));
+                if (friendRequest.Status == FriendRequestStatus.Accepted)
+                {
+                    retUser.Relation = UserRelation.Friend;
+                }
+                else
+                {
+                    if (friendRequest.SenderId == userId)
+                    {
+                        retUser.Relation = UserRelation.SentFriendRequest;
+                    }
+                    else
+                    {
+                        retUser.Relation = UserRelation.ReceivedFriendRequest;
+                    }
+                }
+                users.Add(retUser);
+            }
+            foreach(var user in usersWithNoRelation)
+            {
+                UserViewModel retUser = new UserViewModel()
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Relation = UserRelation.NoRelation
+                };
+                users.Add(retUser);
             }
             return View("Index", users);
         }

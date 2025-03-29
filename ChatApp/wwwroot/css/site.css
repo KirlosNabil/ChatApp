@@ -21,12 +21,6 @@ html {
     font-size: 16px;
 }
 
-@media (min-width: 768px) {
-    html {
-        font-size: 18px;
-    }
-}
-
 .navbar {
     padding: 1rem 1.5rem;
     background-color: #000000 !important;
@@ -34,14 +28,24 @@ html {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8) !important;
 }
 
-    .navbar .container {
-        background-color: transparent !important;
-    }
+.navbar .container {
+    background-color: transparent !important;
+}
+
+.nav-link {
+    font-weight: normal;
+    transition: font-weight 0.2s ease;
+}
+
+.nav-link:hover {
+    font-weight: bold;
+}
 
 main {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
+    margin-left: auto;
 }
 
 .chat-container {
@@ -63,17 +67,17 @@ main {
     word-wrap: break-word;
 }
 
-    .message.sent {
-        background-color: #00BCD4;
-        align-self: flex-end;
-        text-align: right;
-        box-shadow: 0 0 15px rgba(0, 188, 212, 0.8);
-    }
+.message.sent {
+    background-color: #00BCD4;
+    align-self: flex-end;
+    text-align: right;
+    box-shadow: 0 0 15px rgba(0, 188, 212, 0.8);
+}
 
-    .message.received {
-        background-color: #3A3A3A;
-        align-self: flex-start;
-    }
+.message.received {
+    background-color: #3A3A3A;
+    align-self: flex-start;
+}
 
 .welcome-box {
     border: 3px solid #00BCD4;
@@ -118,10 +122,10 @@ main {
     transition: border 0.3s ease-in-out;
 }
 
-    .search-input:focus {
-        border-color: #00A5C3;
-        box-shadow: 0 0 10px rgba(0, 188, 212, 0.8);
-    }
+.search-input:focus {
+    border-color: #00A5C3;
+    box-shadow: 0 0 10px rgba(0, 188, 212, 0.8);
+}
 
 footer {
     position: fixed;
@@ -135,14 +139,14 @@ footer {
     width: 100%;
 }
 
-    footer * {
-        background-color: transparent !important;
-    }
+footer * {
+    background-color: transparent !important;
+}
 
-    footer p {
-        margin: 0;
-        text-align: center;
-    }
+footer p {
+    margin: 0;
+    text-align: center;
+}
 
 .btn {
     background-color: #00BCD4;
@@ -323,10 +327,10 @@ footer {
     transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-    .message-btn:hover .icon-image {
-        transform: scale(1.2);
-        opacity: 0.8;
-    }
+.message-btn:hover .icon-image {
+    transform: scale(1.2);
+    opacity: 0.8;
+}
 
 .icon-image {
     width: 24px;
@@ -347,3 +351,4 @@ footer {
     border-bottom: 1px solid #eee;
     margin-bottom: 10px;
 }
+

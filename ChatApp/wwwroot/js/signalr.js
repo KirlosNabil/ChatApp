@@ -6,7 +6,8 @@ var notificationConnection = new signalR.HubConnectionBuilder()
     .withUrl("/notificationHub")
     .build();
 
-notificationConnection.on("NotifyFriendRequest", function (pendingRequestsCount, notification, notificationCount) {
+notificationConnection.on("NotifyFriendRequest", function (pendingRequestsCount, notification, notificationCount)
+{
     const friendRequestCounterElement = document.getElementById("friendRequestCounter");
     if (friendRequestCounterElement) {
         friendRequestCounterElement.style.display = "inline";
@@ -18,10 +19,12 @@ notificationConnection.on("NotifyFriendRequest", function (pendingRequestsCount,
         notificationCounterElement.style.display = "inline";
         notificationCounterElement.innerText = notificationCount;
     }
+
     const notificationsList = document.getElementById("notificationsList");
     const noNotificationsMessage = document.getElementById("noNotificationsMessage");
 
-    if (notificationsList) {
+    if (notificationsList)
+    {
         const notificationElement = document.createElement("li");
         notificationElement.className = "list-group-item d-flex justify-content-between align-items-center";
         notificationElement.id = `notification-${notification.id}`;
@@ -31,24 +34,26 @@ notificationConnection.on("NotifyFriendRequest", function (pendingRequestsCount,
                 <small class="text-muted d-block">${new Date(notification.date).toLocaleString()}</small>
             </div>
         `;
-
         notificationsList.appendChild(notificationElement);
-        if (noNotificationsMessage) {
+        if (noNotificationsMessage)
+        {
             noNotificationsMessage.style.display = "none";
         }
     }
 });
 
-notificationConnection.on("NotifyAcceptedFriendRequest", function (notification, notificationCount) {
+notificationConnection.on("NotifyAcceptedFriendRequest", function (notification, notificationCount)
+{
     const notificationCounterElement = document.getElementById("notificationCounter");
     if (notificationCounterElement) {
         notificationCounterElement.style.display = "inline";
         notificationCounterElement.innerText = notificationCount;
     }
+
     const notificationsList = document.getElementById("notificationsList");
     const noNotificationsMessage = document.getElementById("noNotificationsMessage");
-
-    if (notificationsList) {
+    if (notificationsList)
+    {
         const notificationElement = document.createElement("li");
         notificationElement.className = "list-group-item d-flex justify-content-between align-items-center";
         notificationElement.id = `notification-${notification.id}`;
@@ -58,18 +63,19 @@ notificationConnection.on("NotifyAcceptedFriendRequest", function (notification,
                 <small class="text-muted d-block">${new Date(notification.date).toLocaleString()}</small>
             </div>
         `;
-
         notificationsList.appendChild(notificationElement);
-        if (noNotificationsMessage) {
+        if (noNotificationsMessage)
+        {
             noNotificationsMessage.style.display = "none";
         }
     }
 });
 
-friendConnection.on("FriendOnline", function (userId, firstName, lastName) {
+friendConnection.on("FriendOnline", function (userId, firstName, lastName)
+{
     const activeFriendsList = document.getElementById("activeFriendsList");
-
-    if (!document.getElementById(`active-friend-${userId}`)) {
+    if (!document.getElementById(`active-friend-${userId}`))
+    {
         const friendElement = document.createElement("li");
         friendElement.id = `active-friend-${userId}`;
         friendElement.innerHTML = `
@@ -90,9 +96,11 @@ friendConnection.on("FriendOnline", function (userId, firstName, lastName) {
     }
 });
 
-friendConnection.on("FriendOffline", function (userId) {
+friendConnection.on("FriendOffline", function (userId)
+{
     const friendElement = document.getElementById(`active-friend-${userId}`);
-    if (friendElement) {
+    if (friendElement)
+    {
         friendElement.remove();
     }
 });
