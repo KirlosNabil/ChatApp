@@ -18,8 +18,12 @@
             @foreach (var msg in Model.ChatMessages)
             {
                 var isMine = msg.Item2 != Model.friendName;
+                var status = msg.Item1.IsRead ? "read" : (msg.Item1.Delivered ? "delivered" : "sent");
                 <div class="chat-message @(isMine ? "mine" : "other")">
-                    <p><b>@msg.Item2:</b> @msg.Item1.Message</p>
+                    <p>
+                        <b>@msg.Item2:</b> @msg.Item1.Message
+                        <span class="message-status @status" id="status-@msg.Item1.Id"></span>
+                    </p>
                 </div>
             }
         </div>

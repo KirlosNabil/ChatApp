@@ -11,17 +11,25 @@
     {
         @foreach (var chat in Model)
         {
+            var fontWeight = chat.countUnreadMessages == 0 ? "normal" : "bold";
+            var fontColor = chat.countUnreadMessages == 0 ? "" : "color:#FFFFFF;";
+
             <a href="@Url.Action("Chat", "Chat", new { friendId = chat.friendId })"
                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
                id="chat-@chat.friendId">
                 <div>
                     <h5 class="mb-1">@chat.friendName</h5>
-                    <p class="mb-1 text-muted" id="lastMessage-@chat.friendId">@chat.lastMesasageSenderName: @chat.lastMessage</p>
+                    <p class="mb-1 text-muted" id="lastMessage-@chat.friendId" style="font-weight:@fontWeight; @fontColor">
+                        @chat.lastMesasageSenderName: @chat.lastMessage
+                    </p>
                 </div>
+                @if (chat.countUnreadMessages > 0)
+                {
+                    <span class="badge-unread">@chat.countUnreadMessages</span>
+                }
             </a>
         }
     }
-
 </div>
 
 @section Scripts {
@@ -38,12 +46,28 @@
             if (chatElement) {
                 if (lastMessageElement) {
                     lastMessageElement.textContent = `${senderName}: ${message}`;
+                    lastMessageElement.style.fontWeight = "bold";
+                    lastMessageElement.style.color = "#FFFFFF";
                 } else {
                     const newMessageElement = document.createElement("p");
                     newMessageElement.id = `lastMessage-${senderId}`;
                     newMessageElement.className = "mb-1 text-muted";
+                    newMessageElement.style.fontWeight = "bold";
+                    newMessageElement.style.color = "#FFFFFF";
                     newMessageElement.textContent = `${senderName}: ${message}`;
                     chatElement.querySelector("div").appendChild(newMessageElement);
+                }
+
+                var badge = chatElement.querySelector(".badge-unread");
+                if (badge) {
+                    var count = parseInt(badge.textContent);
+                    badge.textContent = count + 1;
+                } else {
+                    var friendNameHeader = chatElement.querySelector("h5");
+                    var newBadge = document.createElement("span");
+                    newBadge.className = "badge-unread";
+                    newBadge.textContent = "1";
+                    friendNameHeader.appendChild(newBadge);
                 }
                 chatElement.parentNode.prepend(chatElement);
             } else {
@@ -54,13 +78,20 @@
                 newChatElement.id = `chat-${senderId}`;
 
                 const chatContent = document.createElement("div");
+                chatContent.style.position = "relative";
                 const friendNameHeader = document.createElement("h5");
                 friendNameHeader.className = "mb-1";
                 friendNameHeader.textContent = senderName;
+                const badge = document.createElement("span");
+                badge.className = "badge-unread";
+                badge.textContent = "1";
+                friendNameHeader.appendChild(badge);
 
                 const newMessageElement = document.createElement("p");
                 newMessageElement.id = `lastMessage-${senderId}`;
                 newMessageElement.className = "mb-1 text-muted";
+                newMessageElement.style.fontWeight = "bold";
+                newMessageElement.style.color = "#FFFFFF";
                 newMessageElement.textContent = `${senderName}: ${message}`;
 
                 chatContent.appendChild(friendNameHeader);
@@ -75,5 +106,7 @@
         }).catch(function (err) {
             console.error(err.toString());
         });
+
+
     </script>
 }

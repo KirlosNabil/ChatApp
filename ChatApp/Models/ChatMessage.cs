@@ -10,5 +10,6 @@ namespace ChatApp.Models
         public string SenderId { get; set; }
         public string ReceiverId { get; set; }
         public bool Delivered { get; set; }
+        public bool IsRead { get; set; }
     }
 }

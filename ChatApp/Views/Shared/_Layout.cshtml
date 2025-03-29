@@ -51,6 +51,7 @@
                                 <a class="nav-link text-white" asp-controller="Chat" asp-action="Chats">
                                     <img src="/images/chat-icon.png" alt="Chat Icon" class="icon">
                                     Chats
+                                    @await Component.InvokeAsync("ChatCounter")
                                     </a>
                             </li>
                             <li class="nav-item">

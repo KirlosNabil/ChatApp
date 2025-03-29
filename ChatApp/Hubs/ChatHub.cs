@@ -71,7 +71,9 @@ namespace ChatApp.Hubs
                     SenderId = senderId,
                     ReceiverId = receiverId,
                     Message = message,
-                    Date = DateTime.UtcNow
+                    Date = DateTime.UtcNow,
+                    Delivered = false,
+                    IsRead = false
                 };
 
                 await _dbContext.ChatMessages.AddAsync(newMessage);

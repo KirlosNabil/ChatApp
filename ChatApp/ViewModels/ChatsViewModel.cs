@@ -6,5 +6,6 @@
         public string friendName { get; set; }
         public string lastMessage { get; set; }
         public string lastMesasageSenderName { get; set; }
+        public int countUnreadMessages { get; set; }
     }
 }

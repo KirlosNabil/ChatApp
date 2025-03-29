@@ -29,7 +29,7 @@ namespace ChatApp.Controllers
 
             List<ChatMessage> chatMessages = _dbContext.ChatMessages
                     .Where(m => ((m.SenderId == userId && m.ReceiverId == friendId) ||
-                                (m.SenderId == friendId && m.ReceiverId == userId)) && m.Delivered == true)
+                                (m.SenderId == friendId && m.ReceiverId == userId)))
                     .OrderBy(m => m.Date)
                     .ToList();
 
@@ -47,7 +47,13 @@ namespace ChatApp.Controllers
                 }
 
                 chat.ChatMessages.Add(new Tuple<ChatMessage, string>(ms, name));
+                if(ms.ReceiverId == userId) 
+                {
+                    ms.IsRead = true;
+                }
+                _dbContext.ChatMessages.Update(ms);
             }
+            _dbContext.SaveChanges();
             chat.friendId = friendId;
             chat.friendName = friend.FirstName + " " + friend.LastName;
             return View(chat);
@@ -79,6 +85,7 @@ namespace ChatApp.Controllers
                 cvm.lastMessage = c.Message;
                 cvm.friendName = friend.FirstName + " " + friend.LastName;
                 cvm.friendId = friend.Id;
+                cvm.countUnreadMessages = _dbContext.ChatMessages.Count(m=> m.IsRead == false && (m.ReceiverId == userId));
                 chats.Add(cvm);
             }
             return View(chats);

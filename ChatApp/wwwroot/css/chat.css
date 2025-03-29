@@ -1,4 +1,4 @@
-html, body {
+﻿html, body {
     margin: 0;
     padding: 0;
     height: 100%;
@@ -31,6 +31,7 @@ html, body {
     padding: 0.75rem 1.25rem;
     border-radius: 20px;
     word-wrap: break-word;
+    position: relative;
 }
 
 .chat-message p {
@@ -109,4 +110,28 @@ html, body {
 #sendButton:active  {
     background-color: #008BA3 !important;
     color: #FFFFFF !important;
+}
+
+.message-status {
+    font-size: 13px;
+    position: absolute;
+    bottom: 0px;
+    right: 8px;
+    display: inline-block;
+}
+
+
+.sent::after {
+    content: "✔";
+    color: grey;
+}
+
+.delivered::after {
+    content: "✔✔";
+    color: grey;
+}
+
+.read::after {
+    content: "✔✔";
+    color: #007bff;
 }
