@@ -57,17 +57,15 @@
                     newMessageElement.textContent = `${senderName}: ${message}`;
                     chatElement.querySelector("div").appendChild(newMessageElement);
                 }
-
                 var badge = chatElement.querySelector(".badge-unread");
                 if (badge) {
                     var count = parseInt(badge.textContent);
                     badge.textContent = count + 1;
                 } else {
-                    var friendNameHeader = chatElement.querySelector("h5");
                     var newBadge = document.createElement("span");
                     newBadge.className = "badge-unread";
                     newBadge.textContent = "1";
-                    friendNameHeader.appendChild(newBadge);
+                    chatElement.appendChild(newBadge);
                 }
                 chatElement.parentNode.prepend(chatElement);
             } else {
@@ -76,30 +74,28 @@
                 newChatElement.href = `/Chat/Chat?friendId=${senderId}`;
                 newChatElement.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
                 newChatElement.id = `chat-${senderId}`;
-
                 const chatContent = document.createElement("div");
                 chatContent.style.position = "relative";
                 const friendNameHeader = document.createElement("h5");
                 friendNameHeader.className = "mb-1";
                 friendNameHeader.textContent = senderName;
-                const badge = document.createElement("span");
-                badge.className = "badge-unread";
-                badge.textContent = "1";
-                friendNameHeader.appendChild(badge);
-
                 const newMessageElement = document.createElement("p");
                 newMessageElement.id = `lastMessage-${senderId}`;
                 newMessageElement.className = "mb-1 text-muted";
                 newMessageElement.style.fontWeight = "bold";
                 newMessageElement.style.color = "#FFFFFF";
                 newMessageElement.textContent = `${senderName}: ${message}`;
-
                 chatContent.appendChild(friendNameHeader);
                 chatContent.appendChild(newMessageElement);
                 newChatElement.appendChild(chatContent);
+                const newBadge = document.createElement("span");
+                newBadge.className = "badge-unread";
+                newBadge.textContent = "1";
+                newChatElement.appendChild(newBadge);
                 chatList.prepend(newChatElement);
             }
         });
+
 
         connection.start().then(function () {
             document.getElementById("sendButton").disabled = false;

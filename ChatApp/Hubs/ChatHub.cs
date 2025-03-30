@@ -34,8 +34,9 @@ namespace ChatApp.Hubs
                     {
                         User sender = _dbContext.Users.FirstOrDefault(u => u.Id == message.SenderId);
                         message.Delivered = true;
-                        await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", message.SenderId, sender.FirstName + " " + sender.LastName,
+                        await Clients.User(userId).SendAsync("ReceiveMessage", message.SenderId, sender.FirstName + " " + sender.LastName,
                             message.Message, message.Id, message.Delivered, message.IsRead);
+                        await Clients.User(sender.Id).SendAsync("MessageDelivered", message.Id);
                     }
 
                     await _dbContext.SaveChangesAsync();
@@ -85,18 +86,42 @@ namespace ChatApp.Hubs
                     newMessage.Delivered = true;
                     _dbContext.ChatMessages.Update(newMessage);
                     await _dbContext.SaveChangesAsync();
-                    await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", senderId, sender.FirstName + " " + sender.LastName, message,
+                    await Clients.User(receiverId).SendAsync("ReceiveMessage", senderId, sender.FirstName + " " + sender.LastName, message,
                         newMessage.Id, newMessage.Delivered, newMessage.IsRead);
 
                 }
 
                 if (_connectedUsers.TryGetValue(senderId, out var senderConnectionId))
                 {
-                    await Clients.Client(senderConnectionId).SendAsync("ReceiveMessage", senderId, "You", message, 
+                    await Clients.User(senderId).SendAsync("ReceiveMessage", senderId, "You", message, 
                         newMessage.Id, newMessage.Delivered, newMessage.IsRead);
                 }
             }
             catch (Exception ex){}
+        }
+
+        public async Task MarkMessagesAsRead(string receiverId)
+        {
+            try
+            {
+                string userId = Context.UserIdentifier;
+                var pendingMessages = _dbContext.ChatMessages
+                       .Where(m => m.SenderId == receiverId && m.ReceiverId == userId)
+                       .ToList();
+                if (pendingMessages.Count == 0)
+                {
+                    Console.WriteLine("No unread messages found.");
+                    return;
+                }
+                foreach (var pendingMessage in pendingMessages)
+                {
+                    pendingMessage.IsRead = true;
+                    _dbContext.ChatMessages.Update(pendingMessage);
+                    await Clients.User(receiverId).SendAsync("MessageRead", pendingMessage.Id);
+                }
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex) { }
         }
     }
 }

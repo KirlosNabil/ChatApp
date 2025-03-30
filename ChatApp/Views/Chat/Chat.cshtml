@@ -62,10 +62,29 @@
             `;
 
             chatBox.scrollTop = chatBox.scrollHeight;
+
+            connection.invoke("MarkMessagesAsRead", "@Model.friendId")
+                .catch(function (err) {
+                    console.error(err.toString());
+                });
+        });
+
+        connection.on("MessageRead", function (messageId) {
+            var statusElements = document.querySelectorAll(`#status-${messageId}`);
+            if (statusElements.length > 0) {
+                statusElements.forEach(element => {
+                    element.classList.remove("delivered");
+                    element.classList.add("read");
+                });
+            }
         });
 
         connection.start().then(function () {
             document.getElementById("sendButton").disabled = false;
+            connection.invoke("MarkMessagesAsRead", "@Model.friendId")
+                .catch(function (err) {
+                    console.error(err.toString());
+                });
         }).catch(function (err) {
             console.error(err.toString());
         });

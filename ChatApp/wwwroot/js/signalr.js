@@ -6,6 +6,10 @@ var notificationConnection = new signalR.HubConnectionBuilder()
     .withUrl("/notificationHub")
     .build();
 
+var chatConnection = new signalR.HubConnectionBuilder()
+    .withUrl("/chatHub")
+    .build();
+
 notificationConnection.on("NotifyFriendRequest", function (pendingRequestsCount, notification, notificationCount)
 {
     const friendRequestCounterElement = document.getElementById("friendRequestCounter");
@@ -105,9 +109,20 @@ friendConnection.on("FriendOffline", function (userId)
     }
 });
 
+chatConnection.on("MessageDelivered", function (messageId) {
+    var statusElements = document.querySelectorAll(`#status-${messageId}`);
+    if (statusElements.length > 0) {
+        statusElements.forEach(element => {
+            element.classList.remove("sent");
+            element.classList.add("delivered");
+        });
+    }
+});
+
 Promise.all([
     friendConnection.start(),
-    notificationConnection.start()
+    notificationConnection.start(),
+    chatConnection.start()
 ]).then(function () {
 
 }).catch(function (err) {
