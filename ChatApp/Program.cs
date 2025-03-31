@@ -38,6 +38,7 @@ namespace ChatApp
             builder.Services.AddScoped<IFriendService, FriendService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<IHomeService, HomeService>();
 
             builder.Services.AddSignalR();
             builder.Services.AddControllersWithViews();

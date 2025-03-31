@@ -1,5 +1,6 @@
 ﻿using ChatApp.Data;
 using ChatApp.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Repositories
 {
@@ -21,10 +22,20 @@ namespace ChatApp.Repositories
             _dbContext.Users.Remove(user);
             await _dbContext.SaveChangesAsync();
         }
-        public async Task<User> GetUser(string Id)
+        public async Task<User> GetUserById(string Id)
         {
             User user = await _dbContext.Users.FindAsync(Id);
             return user;
+        }
+        public async Task<List<User>> GetUsersWithName(string firstName, string? lastName = null)
+        {
+            IQueryable<User> query = _dbContext.Users.Where(u => u.FirstName.Contains(firstName));
+            if (!string.IsNullOrEmpty(lastName))
+            {
+                query = query.Where(u => u.LastName.Contains(lastName));
+            }
+            List<User> users = await query.ToListAsync();
+            return users;
         }
     }
 }

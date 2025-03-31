@@ -17,7 +17,7 @@ namespace ChatApp.Services
         }
         public async Task<ChatViewModel> GetChat(string userId, string friendId)
         {
-            User friend = await _userRepository.GetUser(friendId);
+            User friend = await _userRepository.GetUserById(friendId);
 
             ChatViewModel chat = new ChatViewModel();
             chat.friendId = friendId;
@@ -33,7 +33,7 @@ namespace ChatApp.Services
                 }
                 else
                 {
-                    User sender = await _userRepository.GetUser(message.SenderId);
+                    User sender = await _userRepository.GetUserById(message.SenderId);
                     senderName = sender.FirstName + " " + sender.LastName;
                 }
 
@@ -55,7 +55,7 @@ namespace ChatApp.Services
             foreach (ChatMessage chat in lastChatMessages)
             {
                 string friendId = (chat.SenderId == userId ? chat.ReceiverId : chat.SenderId);
-                User friend = await _userRepository.GetUser(friendId);
+                User friend = await _userRepository.GetUserById(friendId);
 
                 ChatsViewModel chatsViewModel = new ChatsViewModel();
                 if (chat.SenderId == userId)

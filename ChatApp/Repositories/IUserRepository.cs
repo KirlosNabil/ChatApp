@@ -6,6 +6,7 @@ namespace ChatApp.Repositories
     {
         public Task AddUser(User user);
         public Task DeleteUser(string Id);
-        public Task<User> GetUser(string Id);
+        public Task<User> GetUserById(string Id);
+        public Task<List<User>> GetUsersWithName(string firstName, string? lastName = null);
     }
 }
