@@ -16,6 +16,11 @@ namespace ChatApp.Repositories
             _dbContext.FriendRequests.Add(friendRequest);
             await _dbContext.SaveChangesAsync();
         }
+        public async Task UpdateFriendRequest(FriendRequest friendRequest)
+        {
+            _dbContext.FriendRequests.Update(friendRequest);
+            await _dbContext.SaveChangesAsync();
+        }
         public async Task DeleteFriendRequest(int Id)
         {
             FriendRequest friendRequest = await _dbContext.FriendRequests.FindAsync(Id);
@@ -36,8 +41,8 @@ namespace ChatApp.Repositories
         }
         public async Task<FriendRequest> GetFriendRequestBetweenTwoUsers(string firstUserId, string secondUserId)
         {
-            FriendRequest friendRequest = await _dbContext.FriendRequests.FirstOrDefaultAsync(u => (u.SenderId == firstUserId && u.ReceiverId == secondUserId)
-                || (u.SenderId == secondUserId && u.ReceiverId == firstUserId));
+            FriendRequest friendRequest = await _dbContext.FriendRequests.FirstOrDefaultAsync(u => ((u.SenderId == firstUserId && u.ReceiverId == secondUserId)
+                || (u.SenderId == secondUserId && u.ReceiverId == firstUserId)) && u.Status != FriendRequestStatus.Rejected);
             return friendRequest;
         }
     }

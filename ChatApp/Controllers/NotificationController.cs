@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using ChatApp.Data;
 using ChatApp.Models;
+using ChatApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,22 +9,17 @@ namespace ChatApp.Controllers
 {
     public class NotificationController : Controller
     {
-        private readonly ApplicationDbContext _dbContext;
-        public NotificationController(ApplicationDbContext dbContext)
+        private readonly INotificationService _notificationService;
+        public NotificationController(INotificationService notificationService)
         {
-            this._dbContext = dbContext;
+            _notificationService = notificationService;
         }
-        public IActionResult Notifications()
+        public async Task<IActionResult> Notifications()
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            List<Notification> notifications = _dbContext.Notifications.Where(u=> u.UserId == userId)
-                .GroupBy(u => u.Id)
-                .Select(g => g.OrderByDescending(m => m.Date).FirstOrDefault()).ToList();
-            foreach(var notification in notifications) 
-            {
-                notification.isRead = true;
-            }
-            _dbContext.SaveChanges();
+
+            List<Notification> notifications = await _notificationService.GetUserNotifications(userId);
+
             return View(notifications);
         }
     }

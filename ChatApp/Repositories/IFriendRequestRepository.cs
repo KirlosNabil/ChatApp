@@ -5,6 +5,7 @@ namespace ChatApp.Repositories
     public interface IFriendRequestRepository
     {
         public Task AddFriendRequest(FriendRequest friendRequest);
+        public Task UpdateFriendRequest(FriendRequest friendRequest);
         public Task DeleteFriendRequest(int Id);
         public Task<FriendRequest> GetFriendRequest(int Id);
         public Task<List<FriendRequest>> GetUserFriendRequests(string userId);

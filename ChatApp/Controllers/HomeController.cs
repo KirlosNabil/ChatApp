@@ -18,7 +18,7 @@ namespace ChatApp.Controllers
             _homeService = homeService;
         }
         [HttpGet]
-        public async Task<IActionResult> SearchAsync(string username)
+        public async Task<IActionResult> Search(string username)
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 

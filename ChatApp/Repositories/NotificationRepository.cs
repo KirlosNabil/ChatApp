@@ -16,6 +16,11 @@ namespace ChatApp.Repositories
             _dbContext.Notifications.Add(notification);
             await _dbContext.SaveChangesAsync();
         }
+        public async Task UpdateNotification(Notification notification)
+        {
+            _dbContext.Notifications.Update(notification);
+            await _dbContext.SaveChangesAsync();
+        }
         public async Task DeleteNotification(int Id)
         {
             Notification notification = await _dbContext.Notifications.FindAsync(Id);

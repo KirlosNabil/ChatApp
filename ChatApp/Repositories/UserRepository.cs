@@ -16,6 +16,11 @@ namespace ChatApp.Repositories
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
         }
+        public async Task UpdateUser(User user)
+        {
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+        }
         public async Task DeleteUser(string Id)
         {
             User user = await _dbContext.Users.FindAsync(Id);
