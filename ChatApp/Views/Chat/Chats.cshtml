@@ -39,24 +39,25 @@
             .withUrl("/chatHub")
             .build();
 
-        connection.on("ReceiveMessage", function (senderId, senderName, message) {
-            var chatElement = document.getElementById(`chat-${senderId}`);
-            var lastMessageElement = document.getElementById(`lastMessage-${senderId}`);
+        connection.on("ReceiveMessage", function (messageDTO) {
+            var chatElement = document.getElementById(`chat-${messageDTO.SenderId}`);
+            var lastMessageElement = document.getElementById(`lastMessage-${messageDTO.SenderId}`);
 
             if (chatElement) {
                 if (lastMessageElement) {
-                    lastMessageElement.textContent = `${senderName}: ${message}`;
+                    lastMessageElement.textContent = `${messageDTO.SenderFullName}: ${messageDTO.MessageContent}`;
                     lastMessageElement.style.fontWeight = "bold";
                     lastMessageElement.style.color = "#FFFFFF";
                 } else {
                     const newMessageElement = document.createElement("p");
-                    newMessageElement.id = `lastMessage-${senderId}`;
+                    newMessageElement.id = `lastMessage-${messageDTO.SenderId}`;
                     newMessageElement.className = "mb-1 text-muted";
                     newMessageElement.style.fontWeight = "bold";
                     newMessageElement.style.color = "#FFFFFF";
-                    newMessageElement.textContent = `${senderName}: ${message}`;
+                    newMessageElement.textContent = `${messageDTO.SenderFullName}: ${messageDTO.MessageContent}`;
                     chatElement.querySelector("div").appendChild(newMessageElement);
                 }
+
                 var badge = chatElement.querySelector(".badge-unread");
                 if (badge) {
                     var count = parseInt(badge.textContent);
@@ -67,31 +68,38 @@
                     newBadge.textContent = "1";
                     chatElement.appendChild(newBadge);
                 }
+
                 chatElement.parentNode.prepend(chatElement);
             } else {
                 const chatList = document.getElementById("chatList");
                 const newChatElement = document.createElement("a");
-                newChatElement.href = `/Chat/Chat?friendId=${senderId}`;
+                newChatElement.href = `/Chat/Chat?friendId=${messageDTO.SenderId}`;
                 newChatElement.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
-                newChatElement.id = `chat-${senderId}`;
+                newChatElement.id = `chat-${messageDTO.SenderId}`;
+
                 const chatContent = document.createElement("div");
                 chatContent.style.position = "relative";
+
                 const friendNameHeader = document.createElement("h5");
                 friendNameHeader.className = "mb-1";
-                friendNameHeader.textContent = senderName;
+                friendNameHeader.textContent = messageDTO.SenderFullName;
+
                 const newMessageElement = document.createElement("p");
-                newMessageElement.id = `lastMessage-${senderId}`;
+                newMessageElement.id = `lastMessage-${messageDTO.SenderId}`;
                 newMessageElement.className = "mb-1 text-muted";
                 newMessageElement.style.fontWeight = "bold";
                 newMessageElement.style.color = "#FFFFFF";
-                newMessageElement.textContent = `${senderName}: ${message}`;
+                newMessageElement.textContent = `${messageDTO.SenderFullName}: ${messageDTO.MessageContent}`;
+
                 chatContent.appendChild(friendNameHeader);
                 chatContent.appendChild(newMessageElement);
                 newChatElement.appendChild(chatContent);
+
                 const newBadge = document.createElement("span");
                 newBadge.className = "badge-unread";
                 newBadge.textContent = "1";
                 newChatElement.appendChild(newBadge);
+
                 chatList.prepend(newChatElement);
             }
         });

@@ -55,5 +55,15 @@ namespace ChatApp.Repositories
             int count = await _dbContext.ChatMessages.CountAsync(m => m.IsRead == false && (m.ReceiverId == userId));
             return count;
         }
+        public async Task<List<ChatMessage>> GetSentMessages(string userId)
+        {
+            List<ChatMessage> sentMessages = await _dbContext.ChatMessages.Where(m => m.ReceiverId == userId && !m.Delivered).ToListAsync();
+            return sentMessages;
+        }
+        public async Task<List<ChatMessage>> GetUnreadChatMessages(string userId, string senderId)
+        {
+            List<ChatMessage> messages = await _dbContext.ChatMessages.Where(m => m.SenderId == senderId && m.ReceiverId == userId && !m.IsRead).ToListAsync();
+            return messages;
+        }
     }
 }

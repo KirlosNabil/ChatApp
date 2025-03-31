@@ -11,5 +11,7 @@ namespace ChatApp.Repositories
         public Task UpdateChatMessage(ChatMessage chatMessage);
         public Task<List<ChatMessage>> GetLastMessages(string userId);
         public Task<int> GetUnreadMessagesCount(string userId);
+        public Task<List<ChatMessage>> GetSentMessages(string userId);
+        public Task<List<ChatMessage>> GetUnreadChatMessages(string userId, string senderId);
     }
 }

@@ -1,22 +1,25 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
 using ChatApp.Data;
+using ChatApp.DTOs;
 using ChatApp.Models;
+using ChatApp.Repositories;
+using ChatApp.Services;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace ChatApp.Hubs
 {
     public class ChatHub : Hub
     {
-        private readonly ApplicationDbContext _dbContext;
-        private static ConcurrentDictionary<string, string> _connectedUsers = new ConcurrentDictionary<string, string>();
+        private readonly IChatService _chatService;
+        private static ConcurrentDictionary<string, List<string>> _connectedUsers = new ConcurrentDictionary<string, List<string>>();
 
-        public ChatHub(ApplicationDbContext dbContext)
+        public ChatHub(IChatService chatService)
         {
-            this._dbContext = dbContext;
+            _chatService = chatService;
         }
-
         public override async Task OnConnectedAsync()
         {
             try
@@ -24,26 +27,11 @@ namespace ChatApp.Hubs
                 var userId = Context.UserIdentifier;
                 if (userId != null)
                 {
-                    _connectedUsers[userId] = Context.ConnectionId;
-
-                    var pendingMessages = _dbContext.ChatMessages
-                        .Where(m => m.ReceiverId == userId && !m.Delivered)
-                        .ToList();
-
-                    foreach (var message in pendingMessages)
-                    {
-                        User sender = _dbContext.Users.FirstOrDefault(u => u.Id == message.SenderId);
-                        message.Delivered = true;
-                        await Clients.User(userId).SendAsync("ReceiveMessage", message.SenderId, sender.FirstName + " " + sender.LastName,
-                            message.Message, message.Id, message.Delivered, message.IsRead);
-                        await Clients.User(sender.Id).SendAsync("MessageDelivered", message.Id);
-                    }
-
-                    await _dbContext.SaveChangesAsync();
+                    _connectedUsers.GetOrAdd(userId, _ => new List<string>()).Add(Context.ConnectionId);
+                    await ReceiveSentMessages(userId);
                 }
             }
             catch (Exception ex) { }
-
             await base.OnConnectedAsync();
         }
 
@@ -52,76 +40,66 @@ namespace ChatApp.Hubs
             try
             {
                 var userId = Context.UserIdentifier;
-                if (userId != null)
+                if (userId != null && _connectedUsers.TryGetValue(userId, out var connections))
                 {
-                    _connectedUsers.TryRemove(userId, out _);
+                    connections.Remove(Context.ConnectionId);
+                    if (connections.Count == 0)
+                    {
+                        _connectedUsers.TryRemove(userId, out _);
+                    }
                 }
             }
             catch (Exception ex){}
-
             await base.OnDisconnectedAsync(exception);
         }
-
         public async Task SendMessage(string receiverId, string message)
         {
             try
             {
-                string senderId = Context.UserIdentifier;
+                string userId = Context.UserIdentifier;
 
-                ChatMessage newMessage = new ChatMessage
+                ChatMessageDTO chatMessageDTO = await _chatService.SendMessage(userId, receiverId, message);
+
+                if (_connectedUsers.ContainsKey(receiverId))
                 {
-                    SenderId = senderId,
-                    ReceiverId = receiverId,
-                    Message = message,
-                    Date = DateTime.UtcNow,
-                    Delivered = false,
-                    IsRead = false
-                };
+                    await _chatService.MarkMessageAsDelivered(chatMessageDTO.MessageId);
 
-                await _dbContext.ChatMessages.AddAsync(newMessage);
-                await _dbContext.SaveChangesAsync();
-                User sender = _dbContext.Users.FirstOrDefault(u => u.Id == senderId);
-                if (_connectedUsers.TryGetValue(receiverId, out var receiverConnectionId))
-                {
-                    newMessage.Delivered = true;
-                    _dbContext.ChatMessages.Update(newMessage);
-                    await _dbContext.SaveChangesAsync();
-                    await Clients.User(receiverId).SendAsync("ReceiveMessage", senderId, sender.FirstName + " " + sender.LastName, message,
-                        newMessage.Id, newMessage.Delivered, newMessage.IsRead);
-
+                    await Clients.User(receiverId).SendAsync("ReceiveMessage", chatMessageDTO);
                 }
-
-                if (_connectedUsers.TryGetValue(senderId, out var senderConnectionId))
+                if (_connectedUsers.ContainsKey(userId))
                 {
-                    await Clients.User(senderId).SendAsync("ReceiveMessage", senderId, "You", message, 
-                        newMessage.Id, newMessage.Delivered, newMessage.IsRead);
+                    await Clients.User(userId).SendAsync("ReceiveMessage", chatMessageDTO);
                 }
             }
             catch (Exception ex){}
         }
-
         public async Task MarkMessagesAsRead(string receiverId)
         {
             try
             {
                 string userId = Context.UserIdentifier;
-                var pendingMessages = _dbContext.ChatMessages
-                       .Where(m => m.SenderId == receiverId && m.ReceiverId == userId)
-                       .ToList();
-                if (pendingMessages.Count == 0)
+                List<int> unreadMessagesIds = await _chatService.GetUnreadChatMessagesIds(userId, receiverId);
+                foreach (int messageId in unreadMessagesIds)
                 {
-                    Console.WriteLine("No unread messages found.");
-                    return;
+                    await _chatService.MarkMessageAsRead(messageId);
+                    await Clients.User(receiverId).SendAsync("MessageRead", messageId);
                 }
-                foreach (var pendingMessage in pendingMessages)
-                {
-                    pendingMessage.IsRead = true;
-                    _dbContext.ChatMessages.Update(pendingMessage);
-                    await Clients.User(receiverId).SendAsync("MessageRead", pendingMessage.Id);
-                }
-                await _dbContext.SaveChangesAsync();
             }
             catch (Exception ex) { }
+        }
+        public async Task ReceiveSentMessages(string userId)
+        {
+            List<int> sentMessagesIds = await _chatService.GetSentChatMessagesIds(userId);
+            foreach (int messageId in sentMessagesIds)
+            {
+                await _chatService.MarkMessageAsDelivered(messageId);
+                ChatMessage message = await _chatService.GetMessageById(messageId);
+                ChatMessageDTO messageDTO = await _chatService.ChatMessageToDTO(message);
+
+                await Clients.User(userId).SendAsync("ReceiveMessage", messageDTO);
+
+                await Clients.User(message.SenderId).SendAsync("MessageDelivered", message.Id);
+            }
         }
     }
 }

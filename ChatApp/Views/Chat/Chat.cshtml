@@ -45,28 +45,31 @@
             .withUrl("/chatHub")
             .build();
 
-        connection.on("ReceiveMessage", function (sender, name, message, messageId, isDelivered, isRead) {
+        connection.on("ReceiveMessage", function (messageDTO) {
             var chatBox = document.getElementById("chatBox");
-            var isMine = name !== "@Model.friendName";
+
+            var isMine = messageDTO.SenderId !== "@Model.friendId";
             var className = isMine ? "mine" : "other";
 
-            var status = isRead ? "read" : isDelivered ? "delivered" : "sent";
-            var statusSpan = isMine ? `<span class="message-status ${status}" id="status-${messageId}"></span>` : "";
+            var status = messageDTO.IsRead ? "read" : messageDTO.IsDelivered ? "delivered" : "sent";
+            var statusSpan = isMine ? `<span class="message-status ${status}" id="status-${messageDTO.MessageId}"></span>` : "";
 
             chatBox.innerHTML += `
                 <div class="chat-message ${className}">
                     <p>
-                               <b>${name}:</b> ${message} ${statusSpan}
+                        <b>${messageDTO.SenderFullName}:</b> ${messageDTO.MessageContent} ${statusSpan}
                     </p>
                 </div>
             `;
 
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            connection.invoke("MarkMessagesAsRead", "@Model.friendId")
-                .catch(function (err) {
-                    console.error(err.toString());
-                });
+            if (!isMine) {
+                connection.invoke("MarkMessagesAsRead", messageDTO.SenderId)
+                    .catch(function (err) {
+                        console.error(err.toString());
+                    });
+            }
         });
 
         connection.on("MessageRead", function (messageId) {

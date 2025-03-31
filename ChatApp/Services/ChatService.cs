@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using ChatApp.DTOs;
 using ChatApp.Models;
 using ChatApp.Repositories;
 using ChatApp.ViewModels;
@@ -73,6 +74,73 @@ namespace ChatApp.Services
                 chats.Add(chatsViewModel);
             }
             return chats;
+        }
+        public async Task<ChatMessageDTO> ChatMessageToDTO(ChatMessage chatMessage)
+        {
+            User sender = await _userRepository.GetUserById(chatMessage.SenderId);
+            ChatMessageDTO chatMessageDTO = new ChatMessageDTO()
+            {
+                MessageId = chatMessage.Id,
+                MessageContent = chatMessage.Message,
+                SenderId = chatMessage.SenderId,
+                SenderFullName = sender.FirstName + " " + sender.LastName,
+                ReceiverId = chatMessage.ReceiverId,
+                IsDelivered = false,
+                IsRead = false
+            };
+            return chatMessageDTO;
+        }
+        public async Task<ChatMessageDTO> SendMessage(string userId, string receiverId, string message)
+        {
+            ChatMessage newMessage = new ChatMessage
+            {
+                SenderId = userId,
+                ReceiverId = receiverId,
+                Message = message,
+                Date = DateTime.UtcNow,
+                Delivered = false,
+                IsRead = false
+            };
+            await _chatMessageRepository.AddChatMessage(newMessage);
+            ChatMessageDTO chatMessageDTO = await ChatMessageToDTO(newMessage);
+            return chatMessageDTO;
+        }
+        public async Task MarkMessageAsDelivered(int messageId)
+        {
+            ChatMessage chatMessage = await _chatMessageRepository.GetChatMessage(messageId);
+            chatMessage.Delivered = true;
+            await _chatMessageRepository.UpdateChatMessage(chatMessage);
+        }
+        public async Task MarkMessageAsRead(int messageId)
+        {
+            ChatMessage chatMessage = await _chatMessageRepository.GetChatMessage(messageId);
+            chatMessage.IsRead = true;
+            await _chatMessageRepository.UpdateChatMessage(chatMessage);
+        }
+        public async Task<List<int>> GetUnreadChatMessagesIds(string userId, string friendId)
+        {
+            List<ChatMessage> unreadMessages = await _chatMessageRepository.GetUnreadChatMessages(userId, friendId);
+            List<int> messagesIds = new List<int>();
+            foreach(ChatMessage unreadMessage in unreadMessages)
+            {
+                messagesIds.Add(unreadMessage.Id);
+            }
+            return messagesIds;
+        }
+        public async Task<List<int>> GetSentChatMessagesIds(string userId)
+        {
+            List<ChatMessage> sentMessages = await _chatMessageRepository.GetSentMessages(userId);
+            List<int> messagesIds = new List<int>();
+            foreach (ChatMessage unreadMessage in sentMessages)
+            {
+                messagesIds.Add(unreadMessage.Id);
+            }
+            return messagesIds;
+        }
+        public async Task<ChatMessage> GetMessageById(int messageId)
+        {
+            ChatMessage message = await _chatMessageRepository.GetChatMessage(messageId);
+            return message;
         }
     }
 }
