@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Repositories
 {
-    public class NotificationRepository
+    public class NotificationRepository : INotificationRepository
     {
         private readonly ApplicationDbContext _dbContext;
         public NotificationRepository(ApplicationDbContext dbContext)

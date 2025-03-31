@@ -1,6 +1,8 @@
 ﻿using ChatApp.Data;
 using ChatApp.Hubs;
 using ChatApp.Models;
+using ChatApp.Repositories;
+using ChatApp.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,8 +14,7 @@ namespace ChatApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
@@ -28,13 +29,15 @@ namespace ChatApp
             .AddDefaultTokenProviders()
             .AddDefaultUI();
 
-            builder.Services.ConfigureApplicationCookie(options =>
-            {
-                options.Cookie.Name = "ChatAppCookie";
-                options.Cookie.HttpOnly = true;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-                options.Cookie.SameSite = SameSiteMode.Lax;
-            });
+            builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
+            builder.Services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+            builder.Services.AddScoped<IChatService, ChatService>();
+            builder.Services.AddScoped<IFriendService, FriendService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
 
             builder.Services.AddSignalR();
             builder.Services.AddControllersWithViews();

@@ -3,7 +3,7 @@ using ChatApp.Models;
 
 namespace ChatApp.Repositories
 {
-    public class UserRepository
+    public class UserRepository : IUserRepository
     {
         private readonly ApplicationDbContext _dbContext;
         public UserRepository(ApplicationDbContext dbContext)

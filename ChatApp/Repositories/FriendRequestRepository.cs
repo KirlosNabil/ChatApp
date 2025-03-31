@@ -3,7 +3,7 @@ using ChatApp.Models;
 
 namespace ChatApp.Repositories
 {
-    public class FriendRequestRepository
+    public class FriendRequestRepository : IFriendRequestRepository
     {
         private readonly ApplicationDbContext _dbContext;
         public FriendRequestRepository(ApplicationDbContext dbContext)

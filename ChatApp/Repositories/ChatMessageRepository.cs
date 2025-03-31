@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Repositories
 {
-    public class ChatMessageRepository
+    public class ChatMessageRepository : IChatMessageRepository
     {
         private readonly ApplicationDbContext _dbContext;
         public ChatMessageRepository(ApplicationDbContext dbContext)
@@ -22,6 +22,11 @@ namespace ChatApp.Repositories
             _dbContext.ChatMessages.Remove(chatMessage);
             await _dbContext.SaveChangesAsync();
         }
+        public async Task UpdateChatMessage(ChatMessage chatMessage)
+        {
+            _dbContext.ChatMessages.Update(chatMessage);
+            await _dbContext.SaveChangesAsync();
+        }
         public async Task<ChatMessage> GetChatMessage(int Id)
         {
             ChatMessage chatMessage = await _dbContext.ChatMessages.FindAsync(Id);
@@ -35,6 +40,20 @@ namespace ChatApp.Repositories
                     .OrderBy(m => m.Date)
                     .ToListAsync();
             return chatMessages;
+        }
+        public async Task<List<ChatMessage>> GetLastMessages(string userId)
+        {
+            List<ChatMessage> lastMessagesOfEveryChat = await _dbContext.ChatMessages
+           .Where(m => m.SenderId == userId || m.ReceiverId == userId)
+           .GroupBy(m => m.SenderId == userId ? m.ReceiverId : m.SenderId)
+           .Select(g => g.OrderByDescending(m => m.Date).FirstOrDefault())
+           .ToListAsync();
+            return lastMessagesOfEveryChat;
+        }
+        public async Task<int> GetUnreadMessagesCount(string userId)
+        {
+            int count = await _dbContext.ChatMessages.CountAsync(m => m.IsRead == false && (m.ReceiverId == userId));
+            return count;
         }
     }
 }

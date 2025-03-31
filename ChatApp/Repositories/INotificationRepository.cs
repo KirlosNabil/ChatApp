@@ -1,0 +1,12 @@
+﻿using ChatApp.Models;
+
+namespace ChatApp.Repositories
+{
+    public interface INotificationRepository
+    {
+        public Task AddNotification(Notification notification);
+        public Task DeleteNotification(int Id);
+        public Task<Notification> GetNotificatione(int Id);
+        public Task<List<Notification>> GetUserNotifications(string userId);
+    }
+}
