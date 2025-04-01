@@ -48,16 +48,16 @@
         connection.on("ReceiveMessage", function (messageDTO) {
             var chatBox = document.getElementById("chatBox");
 
-            var isMine = messageDTO.SenderId !== "@Model.friendId";
+            var isMine = messageDTO.senderId !== "@Model.friendId";
             var className = isMine ? "mine" : "other";
 
-            var status = messageDTO.IsRead ? "read" : messageDTO.IsDelivered ? "delivered" : "sent";
-            var statusSpan = isMine ? `<span class="message-status ${status}" id="status-${messageDTO.MessageId}"></span>` : "";
+            var status = messageDTO.isRead ? "read" : messageDTO.isDelivered ? "delivered" : "sent";
+            var statusSpan = isMine ? `<span class="message-status ${status}" id="status-${messageDTO.messageId}"></span>` : "";
 
             chatBox.innerHTML += `
                 <div class="chat-message ${className}">
                     <p>
-                        <b>${messageDTO.SenderFullName}:</b> ${messageDTO.MessageContent} ${statusSpan}
+                        <b>${isMine? "You" : messageDTO.senderFullName}:</b> ${messageDTO.messageContent} ${statusSpan}
                     </p>
                 </div>
             `;
@@ -65,7 +65,7 @@
             chatBox.scrollTop = chatBox.scrollHeight;
 
             if (!isMine) {
-                connection.invoke("MarkMessagesAsRead", messageDTO.SenderId)
+                connection.invoke("MarkMessagesAsRead", messageDTO.senderId)
                     .catch(function (err) {
                         console.error(err.toString());
                     });
