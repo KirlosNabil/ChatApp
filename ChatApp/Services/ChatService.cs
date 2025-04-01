@@ -39,11 +39,6 @@ namespace ChatApp.Services
                 }
 
                 chat.ChatMessages.Add(new Tuple<ChatMessage, string>(message, senderName));
-                if (message.ReceiverId == userId)
-                {
-                    message.IsRead = true;
-                }
-                await _chatMessageRepository.UpdateChatMessage(message);
             }
 
             return chat;

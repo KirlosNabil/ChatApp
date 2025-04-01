@@ -40,21 +40,21 @@
             .build();
 
         connection.on("ReceiveMessage", function (messageDTO) {
-            var chatElement = document.getElementById(`chat-${messageDTO.SenderId}`);
-            var lastMessageElement = document.getElementById(`lastMessage-${messageDTO.SenderId}`);
+            var chatElement = document.getElementById(`chat-${messageDTO.senderId}`);
+            var lastMessageElement = document.getElementById(`lastMessage-${messageDTO.senderId}`);
 
             if (chatElement) {
                 if (lastMessageElement) {
-                    lastMessageElement.textContent = `${messageDTO.SenderFullName}: ${messageDTO.MessageContent}`;
+                    lastMessageElement.textContent = `${messageDTO.senderFullName}: ${messageDTO.messageContent}`;
                     lastMessageElement.style.fontWeight = "bold";
                     lastMessageElement.style.color = "#FFFFFF";
                 } else {
                     const newMessageElement = document.createElement("p");
-                    newMessageElement.id = `lastMessage-${messageDTO.SenderId}`;
+                    newMessageElement.id = `lastMessage-${messageDTO.senderId}`;
                     newMessageElement.className = "mb-1 text-muted";
                     newMessageElement.style.fontWeight = "bold";
                     newMessageElement.style.color = "#FFFFFF";
-                    newMessageElement.textContent = `${messageDTO.SenderFullName}: ${messageDTO.MessageContent}`;
+                    newMessageElement.textContent = `${messageDTO.senderFullName}: ${messageDTO.messageContent}`;
                     chatElement.querySelector("div").appendChild(newMessageElement);
                 }
 
@@ -73,23 +73,23 @@
             } else {
                 const chatList = document.getElementById("chatList");
                 const newChatElement = document.createElement("a");
-                newChatElement.href = `/Chat/Chat?friendId=${messageDTO.SenderId}`;
+                newChatElement.href = `/Chat/Chat?friendId=${messageDTO.senderId}`;
                 newChatElement.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
-                newChatElement.id = `chat-${messageDTO.SenderId}`;
+                newChatElement.id = `chat-${messageDTO.senderId}`;
 
                 const chatContent = document.createElement("div");
                 chatContent.style.position = "relative";
 
                 const friendNameHeader = document.createElement("h5");
                 friendNameHeader.className = "mb-1";
-                friendNameHeader.textContent = messageDTO.SenderFullName;
+                friendNameHeader.textContent = messageDTO.senderFullName;
 
                 const newMessageElement = document.createElement("p");
-                newMessageElement.id = `lastMessage-${messageDTO.SenderId}`;
+                newMessageElement.id = `lastMessage-${messageDTO.senderId}`;
                 newMessageElement.className = "mb-1 text-muted";
                 newMessageElement.style.fontWeight = "bold";
                 newMessageElement.style.color = "#FFFFFF";
-                newMessageElement.textContent = `${messageDTO.SenderFullName}: ${messageDTO.MessageContent}`;
+                newMessageElement.textContent = `${messageDTO.senderFullName}: ${messageDTO.messageContent}`;
 
                 chatContent.appendChild(friendNameHeader);
                 chatContent.appendChild(newMessageElement);

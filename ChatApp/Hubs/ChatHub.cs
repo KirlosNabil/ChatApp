@@ -61,6 +61,7 @@ namespace ChatApp.Hubs
                 if (_connectedUsers.ContainsKey(receiverId))
                 {
                     await _chatService.MarkMessageAsDelivered(chatMessageDTO.MessageId);
+                    chatMessageDTO.IsDelivered = true;
 
                     await Clients.User(receiverId).SendAsync("ReceiveMessage", chatMessageDTO);
                 }
@@ -80,6 +81,7 @@ namespace ChatApp.Hubs
                 foreach (int messageId in unreadMessagesIds)
                 {
                     await _chatService.MarkMessageAsRead(messageId);
+
                     await Clients.User(receiverId).SendAsync("MessageRead", messageId);
                 }
             }
