@@ -16,10 +16,19 @@ namespace ChatApp.Services
             _friendRepository = friendRepository;
             _userRepository = userRepository;
         }
+        public async Task SendFriendRequest(string senderId, string receiverId)
+        {
+            FriendRequest friendRequest = new FriendRequest()
+            {
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                Status = FriendRequestStatus.Sent
+            };
+            await _friendRepository.AddFriendRequest(friendRequest);
+        }
         public async Task<List<FriendRequestViewModel>> GetUserFriendRequests(string userId)
         {
             List<FriendRequest> friendRequests = await _friendRepository.GetUserFriendRequests(userId);
-
             List<FriendRequestViewModel> friendRequestViewModels = new List<FriendRequestViewModel>();
             foreach (FriendRequest friendRequest in friendRequests)
             {
@@ -57,6 +66,32 @@ namespace ChatApp.Services
             }
             return sentRequestViewModels;
         }
+        public async Task<List<FriendRequestViewModel>> GetUserUnreceivedRequests(string userId)
+        {
+            List<FriendRequest> friendRequests = await _friendRepository.GetUserFriendRequests(userId);
+            List<FriendRequestViewModel> friendRequestViewModels = new List<FriendRequestViewModel>();
+            foreach (FriendRequest friendRequest in friendRequests)
+            {
+                if (friendRequest.ReceiverId == userId && friendRequest.Status == FriendRequestStatus.Sent)
+                {
+                    User sender = await _userRepository.GetUserById(friendRequest.SenderId);
+                    FriendRequestViewModel friendRequestViewModel = new FriendRequestViewModel()
+                    {
+                        SenderFirstName = sender.FirstName,
+                        SenderLastName = sender.LastName,
+                        SenderId = sender.Id
+                    };
+                    friendRequestViewModels.Add(friendRequestViewModel);
+                }
+            }
+            return friendRequestViewModels;
+        }
+        public async Task UpdateFriendRequestStatus(string senderId, string receiverId, FriendRequestStatus status)
+        {
+            FriendRequest friendRequest = await _friendRepository.GetFriendRequestBetweenTwoUsers(senderId, receiverId);
+            friendRequest.Status = status;
+            await _friendRepository.UpdateFriendRequest(friendRequest);
+        }
         public async Task RemoveRequest(string userId, string receiverId)
         {
             FriendRequest friendRequest = await _friendRepository.GetFriendRequestBetweenTwoUsers(userId, receiverId);
@@ -81,15 +116,11 @@ namespace ChatApp.Services
             sender.FriendList.Add(user.Id);
             await _userRepository.UpdateUser(user);
             await _userRepository.UpdateUser(sender);
-            FriendRequest friendRequest = await _friendRepository.GetFriendRequestBetweenTwoUsers(userId, senderId);
-            friendRequest.Status = FriendRequestStatus.Accepted;
-            await _friendRepository.UpdateFriendRequest(friendRequest);
+            await UpdateFriendRequestStatus(userId, senderId, FriendRequestStatus.Accepted);
         }
         public async Task RejectFriendRequest(string userId, string senderId)
         {
-            FriendRequest friendRequest = await _friendRepository.GetFriendRequestBetweenTwoUsers(userId, senderId);
-            friendRequest.Status = FriendRequestStatus.Rejected;
-            await _friendRepository.UpdateFriendRequest(friendRequest);
+            await UpdateFriendRequestStatus(userId, senderId, FriendRequestStatus.Rejected);
         }
         public async Task<List<FriendViewModel>> GetUserFriends(string userId)
         {
@@ -105,6 +136,16 @@ namespace ChatApp.Services
                     LastName = friendUser.LastName
                 };
                 friends.Add(friendViewModel);
+            }
+            return friends;
+        }
+        public async Task<List<string>> GetUserFriendsIds(string userId)
+        {
+            User user = await _userRepository.GetUserById(userId);
+            List<string> friends = new List<string>();
+            foreach (string friend in user.FriendList)
+            {
+                friends.Add(friend);
             }
             return friends;
         }

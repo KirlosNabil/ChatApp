@@ -19,7 +19,6 @@ namespace ChatApp.Controllers
         {
             _chatService = chatService;
         }
-
         public async Task<IActionResult> Chat(string friendId)
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

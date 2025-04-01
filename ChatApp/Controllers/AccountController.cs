@@ -16,7 +16,6 @@ namespace ChatApp.Controllers
             _userManager = userManager;
             _signInManager = signInManager;
         }
-
         [HttpGet]
         public IActionResult Register()
         {
@@ -51,7 +50,6 @@ namespace ChatApp.Controllers
 
             return View(model);
         }
-
         [HttpGet]
         public IActionResult Login()
         {
@@ -87,7 +85,6 @@ namespace ChatApp.Controllers
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
         }
-
         [HttpPost]
         public async Task<IActionResult> Logout()
         {

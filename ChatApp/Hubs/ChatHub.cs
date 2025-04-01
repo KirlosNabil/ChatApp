@@ -15,7 +15,6 @@ namespace ChatApp.Hubs
     {
         private readonly IChatService _chatService;
         private static ConcurrentDictionary<string, List<string>> _connectedUsers = new ConcurrentDictionary<string, List<string>>();
-
         public ChatHub(IChatService chatService)
         {
             _chatService = chatService;
@@ -24,7 +23,7 @@ namespace ChatApp.Hubs
         {
             try
             {
-                var userId = Context.UserIdentifier;
+                string userId = Context.UserIdentifier;
                 if (userId != null)
                 {
                     _connectedUsers.GetOrAdd(userId, _ => new List<string>()).Add(Context.ConnectionId);
@@ -34,12 +33,11 @@ namespace ChatApp.Hubs
             catch (Exception ex) { }
             await base.OnConnectedAsync();
         }
-
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             try
             {
-                var userId = Context.UserIdentifier;
+                string userId = Context.UserIdentifier;
                 if (userId != null && _connectedUsers.TryGetValue(userId, out var connections))
                 {
                     connections.Remove(Context.ConnectionId);
