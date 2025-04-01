@@ -7,6 +7,7 @@ namespace ChatApp.Services
     {
         public Task SendFriendRequest(string senderId, string receiverId);
         public Task<List<FriendRequestViewModel>> GetUserFriendRequests(string userId);
+        public Task<int> GetUserFriendRequestsCount(string userId);
         public Task<List<SentRequestViewModel>> GetUserSentRequests(string userId);
         public Task<List<FriendRequestViewModel>> GetUserUnreceivedRequests(string userId);
         public Task RemoveRequest(string userId, string receiverId);

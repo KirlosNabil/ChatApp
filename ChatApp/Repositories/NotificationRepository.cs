@@ -40,5 +40,10 @@ namespace ChatApp.Repositories
                     .ToListAsync();
             return notifications;
         }
+        public async Task<int> GetUserUnreadNotificationsCount(string userId)
+        {
+            int unreadNotificationsCount = await _dbContext.Notifications.CountAsync(u => u.UserId == userId && u.isRead == false);
+            return unreadNotificationsCount;
+        }
     }
 }

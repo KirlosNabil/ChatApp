@@ -46,6 +46,11 @@ namespace ChatApp.Services
             }
             return friendRequestViewModels;
         }
+        public async Task<int> GetUserFriendRequestsCount(string userId)
+        {
+            List<FriendRequestViewModel> friendRequests = await GetUserFriendRequests(userId);
+            return friendRequests.Count;
+        }
         public async Task<List<SentRequestViewModel>> GetUserSentRequests(string userId)
         {
             List<FriendRequest> friendRequests = await _friendRepository.GetUserFriendRequests(userId);

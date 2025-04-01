@@ -3,43 +3,29 @@ using System.Collections.Concurrent;
 using ChatApp.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using ChatApp.Services;
 
 namespace ChatApp.Hubs
 {
     public class NotificationHub : Hub
     {
-        private readonly ApplicationDbContext _dbContext;
-        public NotificationHub(ApplicationDbContext dbContext)
+        private readonly INotificationService _notificationService;
+        private readonly IFriendService _friendService;
+        public NotificationHub(INotificationService notificationService, IFriendService friendService)
         {
-            this._dbContext = dbContext;
+            _notificationService = notificationService;
+            _friendService = friendService;
         }
         public async Task FriendRequestNotification(string receiverId)
         {
             try
             {
-                string senderId = Context.UserIdentifier;
-                User sender = await _dbContext.Users.FindAsync(senderId);
-                User receiver = await _dbContext.Users.FindAsync(receiverId);
-                if (receiver != null)
-                {
-                    int pendingRequestsCount = _dbContext.FriendRequests
-                        .Count(u => u.ReceiverId == receiverId 
-                    && u.Status == FriendRequestStatus.Pending);
-                    string notification = $"{sender.FirstName} {sender.LastName} sent you a friend request!";
-                    Notification n = new Notification()
-                    {
-                        UserId = receiverId,
-                        Content = notification,
-                        Date = DateTime.Now,
-                        isRead = false
-                    };
-                    _dbContext.Notifications.Add(n);
-                    _dbContext.SaveChanges();
-                    int notificationCount = _dbContext.Notifications
-                    .Count(u => u.UserId == receiverId
-                                 && u.isRead == false);
-                    await Clients.User(receiverId).SendAsync("NotifyFriendRequest", pendingRequestsCount, n, notificationCount);
-                }
+                string userId = Context.UserIdentifier;
+                Notification notification = await _notificationService.CreateSentFriendRequestNotification(userId, receiverId);
+                int friendRequestsCount = await _friendService.GetUserFriendRequestsCount(receiverId);
+                int notificationsCount = await _notificationService.GetUserUnreadNotificationsCount(receiverId);
+
+                await Clients.User(receiverId).SendAsync("NotifyFriendRequest", friendRequestsCount, notification, notificationsCount);
             }
             catch (Exception ex) { }
         }
@@ -47,26 +33,11 @@ namespace ChatApp.Hubs
         {
             try
             {
-                string senderId = Context.UserIdentifier;
-                User sender = await _dbContext.Users.FindAsync(senderId);
-                User receiver = await _dbContext.Users.FindAsync(receiverId);
-                if (receiver != null)
-                {
-                    string notification = $"{sender.FirstName} {sender.LastName} accepted your friend request!";
-                    Notification n = new Notification()
-                    {
-                        UserId = receiverId,
-                        Content = notification,
-                        Date = DateTime.Now,
-                        isRead = false
-                    };
-                    _dbContext.Notifications.Add(n);
-                    _dbContext.SaveChanges();
-                    int notificationCount = _dbContext.Notifications
-                    .Count(u => u.UserId == receiverId
-                                 && u.isRead == false);
-                    await Clients.User(receiverId).SendAsync("NotifyAcceptedFriendRequest", n, notificationCount);
-                }
+                string userId = Context.UserIdentifier;
+                Notification notification = await _notificationService.CreateAcceptedFriendRequestNotification(userId, receiverId);
+                int notificationsCount = await _notificationService.GetUserUnreadNotificationsCount(receiverId);
+
+                await Clients.User(receiverId).SendAsync("NotifyAcceptedFriendRequest", notification, notificationsCount);
             }
             catch (Exception ex) { }
         }
