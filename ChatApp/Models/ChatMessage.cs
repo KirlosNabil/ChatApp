@@ -8,7 +8,9 @@ namespace ChatApp.Models
         public string Message { get; set; }
         public DateTime Date { get; set; }
         public string SenderId { get; set; }
+        public User Sender { get; set; }
         public string ReceiverId { get; set; }
+        public User Receiver { get; set; }
         public bool Delivered { get; set; }
         public bool IsRead { get; set; }
     }
