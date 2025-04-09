@@ -282,7 +282,6 @@ footer p {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
-
 .friend-container {
     background-color: #455A64;
     color: #ffffff;
@@ -363,4 +362,80 @@ footer p {
     justify-content: center;
     min-width: 32px;
     height: 32px;
+}
+
+.profile-picture-container {
+    position: relative;
+    display: inline-block;
+    text-align: center;
+}
+
+.profile-picture {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #007bff;
+}
+
+.upload-button {
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.upload-button:hover {
+    background-color: #0056b3;
+}
+
+.profile-picture-label {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.profile-container {
+    text-align: left;
+    margin-top: 10px;
+}
+
+.profile-container img {
+    width: 350px;
+    height: 350px;
+    border-radius: 50%;
+}
+
+.profile-container .name h2 {
+    font-size: 50px;
+    margin-top: 50px;
+    margin-left: 10px;
+}
+
+.profile-container .buttons-container {
+    margin-top: 40px;
+}
+
+.profile-container .btn {
+    margin: 0 10px;
+    width: 250px;
+}
+
+.form-control[readonly] {
+    background-color: #455A64;
+    color: #CFD8DC;
+    border: 1px solid #ccc;
+}
+.form-group {
+    margin-bottom: 20px;
 }

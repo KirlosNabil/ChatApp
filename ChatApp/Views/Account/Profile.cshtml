@@ -1,0 +1,20 @@
+﻿@model ChatApp.ViewModels.UserViewModel
+
+<head>
+    <link href="~/css/site.css" rel="stylesheet" />
+</head>
+
+<div class="container profile-container">
+    <img src="@Url.Content(Model.ProfilePicturePath)" alt="Profile Picture" class="img-fluid">
+
+    <div class="name">
+        <h2>@Model.FirstName @Model.LastName</h2>
+    </div>
+
+    <div class="buttons-container d-flex justify-content">
+        <form method="get" asp-controller="Friend" asp-action="Friends" class="me-2">
+            <button type="submit" class="btn btn-primary">View Friends</button>
+        </form>
+        <a class="btn btn-grey" href="@Url.Action("EditProfile", "Account")" class="btn btn-secondary">Edit Profile</a>
+    </div>
+</div>

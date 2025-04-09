@@ -1,0 +1,45 @@
+﻿@model ChatApp.ViewModels.EditProfileViewModel
+
+<h2>Edit Profile</h2>
+
+<form method="post" class="form-container">
+    <div class="form-group">
+        <label for="FirstName">First Name</label>
+        <input type="text" class="form-control" id="FirstName" name="FirstName" value="@Model.FirstName" readonly />
+        @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="LastName">Last Name</label>
+        <input type="text" class="form-control" id="LastName" name="LastName" value="@Model.LastName" readonly />
+        @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="Email">Email</label>
+        <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" readonly />
+        @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+    </div>
+
+    <h3>Change Password</h3>
+
+    <div class="form-group">
+        <label for="CurrentPassword">Current Password</label>
+        <input type="password" class="form-control" id="CurrentPassword" name="CurrentPassword" required />
+        @Html.ValidationMessageFor(model => model.CurrentPassword, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="NewPassword">New Password</label>
+        <input type="password" class="form-control" id="NewPassword" name="NewPassword" required />
+        @Html.ValidationMessageFor(model => model.NewPassword, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="ConfirmNewPassword">Confirm New Password</label>
+        <input type="password" class="form-control" id="ConfirmNewPassword" name="ConfirmNewPassword" required />
+        @Html.ValidationMessageFor(model => model.ConfirmNewPassword, "", new { @class = "text-danger" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>

@@ -35,12 +35,6 @@
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item me-2">
-                                <a class="nav-link text-white" asp-controller="Friend" asp-action="Friends">
-                                    <img src="/images/friends-icon.png" alt="Friends Icon" class="icon">
-                                    Friends
-                                    </a>
-                            </li>
-                            <li class="nav-item me-2">
                                 <a class="nav-link text-white" asp-controller="Friend" asp-action="FriendRequests">
                                     <img src="/images/friend-request-icon.png" alt="Friend Request Icon" class="icon">
                                     Friend Requests

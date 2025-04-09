@@ -22,7 +22,7 @@ namespace ChatApp.Controllers
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            List<UserViewModel> users = await _homeService.SearchUser(userId, username);
+            List<SearchUserViewModel> users = await _homeService.SearchUser(userId, username);
 
             return View("Index", users);
         }

@@ -15,11 +15,11 @@ namespace ChatApp.Services
             _userRepository = userRepository;
             _friendRequestRepository = friendRequestRepository;
         }
-        public async Task<List<UserViewModel>> SearchUser(string userId, string searchedName) 
+        public async Task<List<SearchUserViewModel>> SearchUser(string userId, string searchedName) 
         {
             if (string.IsNullOrEmpty(searchedName))
             {
-                return new List<UserViewModel>();
+                return new List<SearchUserViewModel>();
             }
 
             var name = searchedName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -34,7 +34,7 @@ namespace ChatApp.Services
                 }
             }
 
-            var users = new List<UserViewModel>();
+            var users = new List<SearchUserViewModel>();
             List<User> usersWithThisName = new List<User>();
             if (name.Length == 1)
             {
@@ -60,7 +60,7 @@ namespace ChatApp.Services
             }
             foreach (User user in usersWithRelation)
             {
-                UserViewModel retUser = new UserViewModel()
+                SearchUserViewModel retUser = new SearchUserViewModel()
                 {
                     Id = user.Id,
                     FirstName = user.FirstName,
@@ -86,7 +86,7 @@ namespace ChatApp.Services
             }
             foreach (var user in usersWithNoRelation)
             {
-                UserViewModel retUser = new UserViewModel()
+                SearchUserViewModel retUser = new SearchUserViewModel()
                 {
                     Id = user.Id,
                     FirstName = user.FirstName,

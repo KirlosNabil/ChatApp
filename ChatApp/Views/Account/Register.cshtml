@@ -1,7 +1,19 @@
 ﻿@model ChatApp.ViewModels.RegisterViewModel
 
+<head>
+    <link href="~/css/site.css" rel="stylesheet" />
+</head>
+
 <h2 class="text-center">Register New Account</h2>
-<form method="post" class="d-flex flex-column align-items-center">
+<form method="post" class="d-flex flex-column align-items-center" enctype="multipart/form-data">
+    <div class="form-group w-100 mb-4 text-center">
+        <div class="profile-picture-container">
+            <img id="profilePicturePreview" src="@Url.Content("~/profile-pictures/default.jpg")" alt="Profile Picture" class="profile-picture" />
+            <button type="button" class="upload-button" id="uploadButton">+</button>
+            <input type="file" id="profilePictureInput" name="ProfilePicture" class="d-none" accept="image/*" onchange="previewProfilePicture(event)" />
+        </div>
+    </div>
+
     <div class="form-group w-100 mb-3">
         <label asp-for="FirstName"></label>
         <input asp-for="FirstName" class="form-control" />
@@ -10,6 +22,20 @@
     <div class="form-group w-100 mb-3">
         <label asp-for="LastName"></label>
         <input asp-for="LastName" class="form-control" />
+    </div>
+
+    <div class="form-group w-100 mb-3">
+        <label asp-for="Gender">Gender</label>
+        <div class="d-flex">
+            <div class="form-check me-3">
+                <input asp-for="Gender" type="radio" class="form-check-input" value="Male" />
+                <label class="form-check-label">Male</label>
+            </div>
+            <div class="form-check">
+                <input asp-for="Gender" type="radio" class="form-check-input" value="Female" />
+                <label class="form-check-label">Female</label>
+            </div>
+        </div>
     </div>
 
     <div class="form-group w-100 mb-3">
@@ -29,3 +55,25 @@
 
     <button type="submit" class="btn btn-primary w-100 mt-4">Register</button>
 </form>
+
+
+<script>
+    document.getElementById('uploadButton').addEventListener('click', function () 
+    {
+        document.getElementById('profilePictureInput').click();
+    });
+
+    function previewProfilePicture(event) 
+    {
+        const file = event.target.files[0];
+        if (file) 
+        {
+            const reader = new FileReader();
+            reader.onload = function (e) 
+            {
+                document.getElementById('profilePicturePreview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+</script>
