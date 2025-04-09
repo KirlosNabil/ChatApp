@@ -12,6 +12,7 @@ namespace ChatApp.Data
         }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<FriendRequest> FriendRequests { get; set; }
+        public DbSet<Friendship> Friendships { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,6 +46,18 @@ namespace ChatApp.Data
                 .HasOne(fr => fr.Receiver)
                 .WithMany()
                 .HasForeignKey(fr => fr.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Friendship>()
+                .HasOne(u => u.FirstUser)
+                .WithMany()
+                .HasForeignKey(u => u.FirstUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Friendship>()
+                .HasOne(u => u.SecondUser)
+                .WithMany()
+                .HasForeignKey(u => u.SecondUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

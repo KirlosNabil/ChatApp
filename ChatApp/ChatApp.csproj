@@ -17,4 +17,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.13" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\profile-pictures\" />
+  </ItemGroup>
+
 </Project>

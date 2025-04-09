@@ -33,6 +33,7 @@ namespace ChatApp
             builder.Services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IFriendshipRepository, FriendshipRepository>();
 
             builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<IFriendService, FriendService>();

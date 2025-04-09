@@ -10,10 +10,12 @@ namespace ChatApp.Services
     public class FriendService : IFriendService
     {
         private readonly IFriendRequestRepository _friendRepository;
+        private readonly IFriendshipRepository _friendshipRepository;
         private readonly IUserRepository _userRepository;
-        public FriendService(IFriendRequestRepository friendRepository, IUserRepository userRepository)
+        public FriendService(IFriendRequestRepository friendRepository, IFriendshipRepository friendshipRepository, IUserRepository userRepository)
         {
             _friendRepository = friendRepository;
+            _friendshipRepository = friendshipRepository;
             _userRepository = userRepository;
         }
         public async Task SendFriendRequest(string senderId, string receiverId)
@@ -104,24 +106,21 @@ namespace ChatApp.Services
         }
         public async Task RemoveFriend(string userId, string friendId)
         {
-            User user = await _userRepository.GetUserById(userId);
-            User friend = await _userRepository.GetUserById(friendId);
-            user.FriendList.Remove(friendId);
-            friend.FriendList.Remove(userId);
-            await _userRepository.UpdateUser(user);
-            await _userRepository.UpdateUser(friend);
-            FriendRequest friendRequest = await _friendRepository.GetFriendRequestBetweenTwoUsers(userId, friendId);
-            await _friendRepository.DeleteFriendRequest(friendRequest.Id);
+            Friendship friendship = await _friendshipRepository.GetFriendshipBetweenTwoUsers(userId, friendId);
+            if(friendship != null)
+            {
+                await _friendshipRepository.DeleteFriendship(friendship.Id);
+            }
         }
         public async Task AcceptFriendRequest(string userId, string senderId)
         {
-            User user = await _userRepository.GetUserById(userId);
-            User sender = await _userRepository.GetUserById(senderId);
-            user.FriendList.Add(sender.Id);
-            sender.FriendList.Add(user.Id);
-            await _userRepository.UpdateUser(user);
-            await _userRepository.UpdateUser(sender);
             await UpdateFriendRequestStatus(userId, senderId, FriendRequestStatus.Accepted);
+            Friendship friendship = new Friendship()
+            {
+                FirstUserId = userId,
+                SecondUserId = senderId
+            };
+            await _friendshipRepository.AddFriendship(friendship);
         }
         public async Task RejectFriendRequest(string userId, string senderId)
         {
@@ -129,11 +128,20 @@ namespace ChatApp.Services
         }
         public async Task<List<FriendViewModel>> GetUserFriends(string userId)
         {
-            User user = await _userRepository.GetUserById(userId);
+            List<Friendship> friendships = await _friendshipRepository.GetUserFriendships(userId);
             List<FriendViewModel> friends = new List<FriendViewModel>();
-            foreach (string friend in user.FriendList)
+            foreach (Friendship friendship in friendships)
             {
-                User friendUser = await _userRepository.GetUserById(friend);
+                string friendId;
+                if(friendship.FirstUserId == userId)
+                {
+                    friendId = friendship.SecondUserId;
+                }
+                else 
+                {
+                    friendId = friendship.FirstUserId;
+                }
+                User friendUser = await _userRepository.GetUserById(friendId);
                 FriendViewModel friendViewModel = new FriendViewModel()
                 {
                     FriendId = friendUser.Id,
@@ -146,11 +154,20 @@ namespace ChatApp.Services
         }
         public async Task<List<string>> GetUserFriendsIds(string userId)
         {
-            User user = await _userRepository.GetUserById(userId);
+            List<Friendship> friendships = await _friendshipRepository.GetUserFriendships(userId);
             List<string> friends = new List<string>();
-            foreach (string friend in user.FriendList)
+            foreach (Friendship friendship in friendships)
             {
-                friends.Add(friend);
+                string friendId;
+                if (friendship.FirstUserId == userId)
+                {
+                    friendId = friendship.SecondUserId;
+                }
+                else
+                {
+                    friendId = friendship.FirstUserId;
+                }
+                friends.Add(friendId);
             }
             return friends;
         }
