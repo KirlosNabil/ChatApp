@@ -1,0 +1,129 @@
+﻿@model ChatApp.ViewModels.ViewUserViewModel
+
+<head>
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
+</head>
+
+<div class="container profile-container">
+    <img src="@Url.Content(Model.ProfilePicturePath)" alt="Profile Picture" class="img-fluid">
+
+    <div class="name">
+        <h2>@Model.FirstName @Model.LastName</h2>
+    </div>
+    <div class="buttons-container d-flex justify-content">
+        @if (Model.Relation == UserRelation.Friend)
+        {
+            <form method="post" action="@Url.Action("RemoveFriend", "Friend")">
+                <input type="hidden" name="friendId" value="@Model.Id" />
+                <button type="submit" class="btn btn-danger">Remove Friend</button>
+                <a href="@Url.Action("Chat", "Chat", new { friendId = Model.Id })" class="btn btn-primary btn-sm">Chat</a>
+            </form>
+        }
+        @if (Model.Relation == UserRelation.SentFriendRequest)
+        {
+            <form method="post" action="@Url.Action("RemoveRequest", "Friend")">
+                <input type="hidden" name="receiverId" value="@Model.Id" />
+                <button type="submit" class="btn btn-warning">Cancel Request</button>
+            </form>
+        }
+        @if (Model.Relation == UserRelation.ReceivedFriendRequest)
+        {
+            <div id="friendRequestActions-@Model.Id">
+                <button class="btn btn-blue btn-sm ms-2" onclick="handleResponse('@Model.Id', 'Accept', 'text-success')">Accept</button>
+                <button class="btn btn-grey btn-sm ms-1" onclick="handleResponse('@Model.Id', 'Reject', 'text-danger')">Reject</button>
+            </div>
+        }
+        @if (Model.Relation == UserRelation.NoRelation)
+        {
+            <button class="btn sendRequestBtn" data-userid="@Model.Id">
+                Add Friend
+            </button>
+        }
+    </div>
+    <div class="mt-5">
+        <h3>Mutual Friends (@Model.MutualFriends.Count)</h3>
+        <ul class="mt-1 mutual-friends-list">
+            @foreach (var friend in Model.MutualFriends)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center" id="friend-@friend.Id">
+                    <span>@friend.FirstName @friend.LastName</span>
+                    <div>
+                        <a href="@Url.Action("UserProfile", "Home", new { userId = friend.Id })" class="btn btn-primary btn-sm">
+                            <span>View Profile</span>
+                        </a>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        var friendConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/friendHub")
+            .build();
+
+        friendConnection.start().then(function () {
+            const sendRequestButtons = document.querySelectorAll(".sendRequestBtn");
+
+            sendRequestButtons.forEach(button => {
+                button.disabled = false;
+
+                button.addEventListener("click", function () {
+                    var receiverId = button.getAttribute("data-userid");
+                    button.disabled = true;
+                    button.innerText = "Request Sent";
+
+                    friendConnection.invoke("SendFriendRequest", receiverId)
+                        .then(function () {
+                            notificationConnection.invoke("FriendRequestNotification", receiverId);
+                        })
+                        .catch(function (err) {
+                            console.error("Friend request error:", err.toString());
+                            button.disabled = false;
+                            button.innerText = "Add Friend";
+                        });
+                });
+            });
+        }).catch(function (err) {
+            console.error(err.toString());
+        });
+
+        function handleResponse(requestId, action, textClass) {
+            fetch(`/Friend/${action}FriendRequest`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `senderId=${requestId}`
+            })
+                .then(response => {
+                    if (response.ok) {
+                        const actionContainer = document.getElementById(`friendRequestActions-${requestId}`);
+                        if (actionContainer) {
+                            actionContainer.innerHTML = `<span class="${textClass}">${action === 'Accept' ? 'Accepted' : 'Rejected'}</span>`;
+                        }
+
+                        const counterElement = document.getElementById("friendRequestCounter");
+                        if (counterElement) {
+                            counterElement.innerText = parseInt(counterElement.innerText) - 1;
+                            if (counterElement.innerText == 0) {
+                                counterElement.style.display = "none";
+                            }
+                        }
+
+                        if (action === 'Accept') {
+                            notificationConnection.invoke("AcceptFriendRequestNotification", requestId)
+                                .catch(function (err) {
+                                    console.error(err.toString());
+                                });
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+}
+

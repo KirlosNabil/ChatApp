@@ -407,7 +407,7 @@ footer p {
 
 .profile-container {
     text-align: left;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .profile-container img {
@@ -418,12 +418,12 @@ footer p {
 
 .profile-container .name h2 {
     font-size: 50px;
-    margin-top: 50px;
+    margin-top: 20px;
     margin-left: 10px;
 }
 
 .profile-container .buttons-container {
-    margin-top: 40px;
+    margin-top: 20px;
 }
 
 .profile-container .btn {
@@ -438,4 +438,8 @@ footer p {
 }
 .form-group {
     margin-bottom: 20px;
+}
+
+.mutual-friends-list {
+    margin-left: -30px;
 }

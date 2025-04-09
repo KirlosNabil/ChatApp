@@ -9,5 +9,6 @@ namespace ChatApp.Repositories
         public Task<Friendship> GetFriendship(int Id);
         public Task<List<Friendship>> GetUserFriendships(string userId);
         public Task<Friendship> GetFriendshipBetweenTwoUsers(string firstUserId, string secondUserId);
+        public Task<List<string>> GetUserFriendsIds(string userId);
     }
 }

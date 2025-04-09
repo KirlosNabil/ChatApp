@@ -9,28 +9,36 @@ namespace ChatApp.Services
 {
     public class FriendService : IFriendService
     {
-        private readonly IFriendRequestRepository _friendRepository;
+        private readonly IFriendRequestRepository _friendRequestRepository;
         private readonly IFriendshipRepository _friendshipRepository;
         private readonly IUserRepository _userRepository;
         public FriendService(IFriendRequestRepository friendRepository, IFriendshipRepository friendshipRepository, IUserRepository userRepository)
         {
-            _friendRepository = friendRepository;
+            _friendRequestRepository = friendRepository;
             _friendshipRepository = friendshipRepository;
             _userRepository = userRepository;
         }
         public async Task SendFriendRequest(string senderId, string receiverId)
         {
-            FriendRequest friendRequest = new FriendRequest()
+            FriendRequest friendRequest = await _friendRequestRepository.GetFriendRequestBetweenTwoUsers(senderId, receiverId);
+            if(friendRequest == null ) 
             {
-                SenderId = senderId,
-                ReceiverId = receiverId,
-                Status = FriendRequestStatus.Sent
-            };
-            await _friendRepository.AddFriendRequest(friendRequest);
+                FriendRequest newFriendRequest = new FriendRequest()
+                {
+                    SenderId = senderId,
+                    ReceiverId = receiverId,
+                    Status = FriendRequestStatus.Sent
+                };
+                await _friendRequestRepository.AddFriendRequest(newFriendRequest);
+            }
+            else
+            {
+                await UpdateFriendRequestStatus(senderId, receiverId, FriendRequestStatus.Sent);
+            }
         }
         public async Task<List<FriendRequestViewModel>> GetUserFriendRequests(string userId)
         {
-            List<FriendRequest> friendRequests = await _friendRepository.GetUserFriendRequests(userId);
+            List<FriendRequest> friendRequests = await _friendRequestRepository.GetUserFriendRequests(userId);
             List<FriendRequestViewModel> friendRequestViewModels = new List<FriendRequestViewModel>();
             foreach (FriendRequest friendRequest in friendRequests)
             {
@@ -55,7 +63,7 @@ namespace ChatApp.Services
         }
         public async Task<List<SentRequestViewModel>> GetUserSentRequests(string userId)
         {
-            List<FriendRequest> friendRequests = await _friendRepository.GetUserFriendRequests(userId);
+            List<FriendRequest> friendRequests = await _friendRequestRepository.GetUserFriendRequests(userId);
             List<SentRequestViewModel> sentRequestViewModels = new List<SentRequestViewModel>();
             foreach (FriendRequest friendRequest in friendRequests)
             {
@@ -75,7 +83,7 @@ namespace ChatApp.Services
         }
         public async Task<List<FriendRequestViewModel>> GetUserUnreceivedRequests(string userId)
         {
-            List<FriendRequest> friendRequests = await _friendRepository.GetUserFriendRequests(userId);
+            List<FriendRequest> friendRequests = await _friendRequestRepository.GetUserFriendRequests(userId);
             List<FriendRequestViewModel> friendRequestViewModels = new List<FriendRequestViewModel>();
             foreach (FriendRequest friendRequest in friendRequests)
             {
@@ -95,14 +103,14 @@ namespace ChatApp.Services
         }
         public async Task UpdateFriendRequestStatus(string senderId, string receiverId, FriendRequestStatus status)
         {
-            FriendRequest friendRequest = await _friendRepository.GetFriendRequestBetweenTwoUsers(senderId, receiverId);
+            FriendRequest friendRequest = await _friendRequestRepository.GetFriendRequestBetweenTwoUsers(senderId, receiverId);
             friendRequest.Status = status;
-            await _friendRepository.UpdateFriendRequest(friendRequest);
+            await _friendRequestRepository.UpdateFriendRequest(friendRequest);
         }
         public async Task RemoveRequest(string userId, string receiverId)
         {
-            FriendRequest friendRequest = await _friendRepository.GetFriendRequestBetweenTwoUsers(userId, receiverId);
-            await _friendRepository.DeleteFriendRequest(friendRequest.Id);
+            FriendRequest friendRequest = await _friendRequestRepository.GetFriendRequestBetweenTwoUsers(userId, receiverId);
+            await _friendRequestRepository.DeleteFriendRequest(friendRequest.Id);
         }
         public async Task RemoveFriend(string userId, string friendId)
         {
@@ -111,6 +119,8 @@ namespace ChatApp.Services
             {
                 await _friendshipRepository.DeleteFriendship(friendship.Id);
             }
+            FriendRequest friendRequest = await _friendRequestRepository.GetFriendRequestBetweenTwoUsers(userId, friendId);
+            await _friendRequestRepository.DeleteFriendRequest(friendRequest.Id);
         }
         public async Task AcceptFriendRequest(string userId, string senderId)
         {
@@ -170,6 +180,53 @@ namespace ChatApp.Services
                 friends.Add(friendId);
             }
             return friends;
+        }
+        public async Task<List<UserViewModel>> GetMutualFriends(string myId, string userId)
+        {
+            List<string> myFriends = await _friendshipRepository.GetUserFriendsIds(myId);
+            List<string> userFriends = await _friendshipRepository.GetUserFriendsIds(userId);
+            List<UserViewModel> mutualFriends = new List<UserViewModel>();
+            foreach(string friendId in myFriends) 
+            {
+                if(userFriends.Contains(friendId))
+                {
+                    User friend = await _userRepository.GetUserById(friendId);
+                    UserViewModel userViewModel = new UserViewModel()
+                    {
+                        Id = friendId,
+                        FirstName = friend.FirstName,
+                        LastName = friend.LastName,
+                        ProfilePicturePath = friend.ProfilePicturePath
+                    };
+                    mutualFriends.Add(userViewModel);
+                }
+            }
+            return mutualFriends;
+        }
+        public async Task<UserRelation> GetUserRelation(string myId, string userId)
+        {
+            FriendRequest friendRequest = await _friendRequestRepository.GetFriendRequestBetweenTwoUsers(myId, userId);
+            UserRelation relation;
+            if (friendRequest == null || friendRequest.Status == FriendRequestStatus.Rejected)
+            {
+                relation = UserRelation.NoRelation;
+            }
+            else if (friendRequest.Status == FriendRequestStatus.Accepted)
+            {
+                relation = UserRelation.Friend;
+            }
+            else
+            {
+                if (friendRequest.SenderId == myId)
+                {
+                    relation = UserRelation.SentFriendRequest;
+                }
+                else
+                {
+                    relation = UserRelation.ReceivedFriendRequest;
+                }
+            }
+            return relation;
         }
     }
 }

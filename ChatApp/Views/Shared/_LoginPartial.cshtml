@@ -7,7 +7,7 @@
 {
         var user = await UserManager.GetUserAsync(User);
         <li class="nav-item me-3">
-            <a class="nav-link text-white" asp-controller="Account" asp-action="Profile">
+            <a class="nav-link text-white" asp-controller="Account" asp-action="MyProfile">
                 <img src="/images/profile-icon.png" alt="Profile Icon" class="icon">
                 Hello, @user?.FirstName
             </a>

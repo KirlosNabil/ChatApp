@@ -1,30 +1,36 @@
 using System.Diagnostics;
 using System.Security.Claims;
-using ChatApp.Data;
-using ChatApp.Models;
 using ChatApp.Services;
 using ChatApp.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using static Azure.Core.HttpHeader;
 
 namespace ChatApp.Controllers
 {
     public class HomeController : Controller
     {
         private readonly IHomeService _homeService;
-        public HomeController(IHomeService homeService)
+        private readonly IUserService _userService;
+        public HomeController(IHomeService homeService, IUserService userService)
         {
             _homeService = homeService;
+            _userService = userService;
         }
         [HttpGet]
         public async Task<IActionResult> Search(string username)
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            List<SearchUserViewModel> users = await _homeService.SearchUser(userId, username);
+            List<UserViewModel> users = await _homeService.SearchUser(userId, username);
 
             return View("Index", users);
+        }
+        public async Task<IActionResult> UserProfile(string userId)
+        {
+            string myId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            ViewUserViewModel viewUserViewModel = await _userService.GetUserView(myId, userId);
+
+            return View(viewUserViewModel);
         }
         public IActionResult Index()
         {

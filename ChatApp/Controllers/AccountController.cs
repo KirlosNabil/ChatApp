@@ -1,5 +1,6 @@
 ﻿using ChatApp.Data;
 using ChatApp.Models;
+using ChatApp.Services;
 using ChatApp.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +13,12 @@ namespace ChatApp.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        private readonly IUserService _userService;
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IUserService userService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _userService = userService;
         }
         [HttpGet]
         public IActionResult Register()
@@ -108,17 +111,11 @@ namespace ChatApp.Controllers
             await _signInManager.SignOutAsync();
             return RedirectToAction("Login", "Account");
         }
-        public async Task<IActionResult> Profile()
+        public async Task<IActionResult> MyProfile()
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            User user = await _userManager.FindByIdAsync(userId);
-            UserViewModel userViewModel = new UserViewModel()
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                ProfilePicturePath = user.ProfilePicturePath
-            };
+
+            UserViewModel userViewModel = await _userService.GetUser(userId);
             return View(userViewModel);
         }
         [HttpGet]
@@ -157,7 +154,7 @@ namespace ChatApp.Controllers
             var updateResult = await _userManager.UpdateAsync(user);
             if (updateResult.Succeeded)
             {
-                return RedirectToAction("Profile", "Account");
+                return RedirectToAction("MyProfile", "Account");
             }
             foreach (var error in updateResult.Errors)
             {

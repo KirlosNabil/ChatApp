@@ -25,6 +25,6 @@ namespace ChatApp.ViewModels
         public string ConfirmPassword { get; set; }
         [Required]
         public Gender Gender { get; set; }
-        public IFormFile ProfilePicture { get; set; }
+        public IFormFile? ProfilePicture { get; set; }
     }
 }

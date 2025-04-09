@@ -1,8 +1,8 @@
 ﻿@model ChatApp.ViewModels.EditProfileViewModel
 
 <h2>Edit Profile</h2>
-
 <form method="post" class="form-container">
+    <a href="@Url.Action("MyProfile", "Account")" class="btn btn-secondary" style="position: absolute; left: 10px; top: 100px;">Back</a>
     <div class="form-group">
         <label for="FirstName">First Name</label>
         <input type="text" class="form-control" id="FirstName" name="FirstName" value="@Model.FirstName" readonly />

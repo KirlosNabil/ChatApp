@@ -17,5 +17,7 @@ namespace ChatApp.Services
         public Task RejectFriendRequest(string userId, string senderId);
         public Task<List<FriendViewModel>> GetUserFriends(string userId);
         public Task<List<string>> GetUserFriendsIds(string userId);
+        public Task<List<UserViewModel>> GetMutualFriends(string myId, string userId);
+        public Task<UserRelation> GetUserRelation(string myId, string userId);
     }
 }

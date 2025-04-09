@@ -40,5 +40,15 @@ namespace ChatApp.Repositories
                 || (u.FirstUserId == secondUserId && u.SecondUserId == firstUserId)));
             return friendship;
         }
+        public async Task<List<string>> GetUserFriendsIds(string userId)
+        {
+            List<Friendship> friendships = await _dbContext.Friendships
+            .Where(fr => (fr.FirstUserId == userId || fr.SecondUserId == userId))
+            .ToListAsync();
+            List<string> friendsIds = friendships
+            .Select(fr => fr.FirstUserId == userId ? fr.SecondUserId : fr.FirstUserId)
+            .ToList();
+            return friendsIds;
+        }
     }
 }

@@ -23,7 +23,7 @@
             <ul class="list-group" id="activeFriendsList"></ul>
         </div>
 
-    @model List<ChatApp.ViewModels.SearchUserViewModel>
+    @model List<ChatApp.ViewModels.UserViewModel>
 
         @if (Model != null && Model.Any())
         {
@@ -31,45 +31,10 @@
                 <ul class="list-group">
                     @foreach (var user in Model)
                     {
-                        if(user.Relation == UserRelation.ReceivedFriendRequest)
-                        {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>@user.FirstName @user.LastName</span>
-                                Pending Friend Request
-                            </li>
-                        }
-                    }
-                    @foreach (var user in Model)
-                    {
-                        if (user.Relation == UserRelation.SentFriendRequest)
-                        {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>@user.FirstName @user.LastName</span>
-                                Sent Friend Request
-                            </li>
-                        }
-                    }
-                    @foreach (var user in Model)
-                    {
-                        if (user.Relation == UserRelation.Friend)
-                        {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>@user.FirstName @user.LastName</span>
-                                Friend
-                            </li>
-                        }
-                    }
-                    @foreach (var user in Model)
-                    {
-                        if (user.Relation == UserRelation.NoRelation)
-                        {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>@user.FirstName @user.LastName</span>
-                                <button class="btn sendRequestBtn" data-userid="@user.Id">
-                                    Add Friend
-                                </button>
-                            </li>
-                        }
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>@user.FirstName @user.LastName</span>
+                            <a href="@Url.Action("UserProfile", "Home", new { userId = user.Id })" class="btn btn-info btn-sm">View Profile</a>
+                        </li>
                     }
                 </ul>
             </div>
@@ -97,27 +62,6 @@
                 friendConnection.start(),
                 notificationConnection.start()
             ]).then(function () {
-                const sendRequestButtons = document.querySelectorAll(".sendRequestBtn");
-
-                sendRequestButtons.forEach(button => {
-                    button.disabled = false;
-
-                    button.addEventListener("click", function () {
-                        var receiverId = button.getAttribute("data-userid");
-                        button.disabled = true;
-                        button.innerText = "Request Sent";
-
-                        friendConnection.invoke("SendFriendRequest", receiverId)
-                            .then(function () {
-                                notificationConnection.invoke("FriendRequestNotification", receiverId);
-                            })
-                            .catch(function (err) {
-                                console.error("Friend request error:", err.toString());
-                                button.disabled = false;
-                                button.innerText = "Add Friend";
-                            });
-                    });
-                });
                 friendConnection.invoke("GetOnlineFriends")
                     .then(function (onlineFriends) {
                         const activeFriendsList = document.getElementById("activeFriendsList");
