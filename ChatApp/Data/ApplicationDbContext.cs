@@ -14,6 +14,9 @@ namespace ChatApp.Data
         public DbSet<FriendRequest> FriendRequests { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<GroupChatMessage> GroupChatMessages { get; set; }
+        public DbSet<GroupChatMember> GroupChatMembers { get; set; }
+        public DbSet<GroupChat> GroupChats { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -58,6 +61,30 @@ namespace ChatApp.Data
                 .HasOne(u => u.SecondUser)
                 .WithMany()
                 .HasForeignKey(u => u.SecondUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<GroupChatMember>()
+                .HasOne(u => u.User)
+                .WithMany()
+                .HasForeignKey(u => u.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<GroupChatMember>()
+               .HasOne(g => g.Group)
+               .WithMany()
+               .HasForeignKey(u => u.GroupId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<GroupChat>()
+                .HasOne(u => u.Owner)
+                .WithMany()
+                .HasForeignKey(u => u.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<GroupChatMessage>()
+                .HasOne(u => u.Sender)
+                .WithMany()
+                .HasForeignKey(u => u.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
