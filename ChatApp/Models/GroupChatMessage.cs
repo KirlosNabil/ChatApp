@@ -12,7 +12,5 @@ namespace ChatApp.Models
         public int GroupId { get; set; }
         [ForeignKey("GroupId")]
         public GroupChat Group { get; set; }
-        public bool Delivered { get; set; }
-        public bool IsRead { get; set; }
     }
 }

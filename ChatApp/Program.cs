@@ -34,12 +34,14 @@ namespace ChatApp
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IFriendshipRepository, FriendshipRepository>();
+            builder.Services.AddScoped<IGroupChatRepository, GroupChatRepository>();
 
             builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<IFriendService, FriendService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<IHomeService, HomeService>();
+            builder.Services.AddScoped<IGroupChatService, GroupChatService>();
 
             builder.Services.AddSignalR();
             builder.Services.AddControllersWithViews();
