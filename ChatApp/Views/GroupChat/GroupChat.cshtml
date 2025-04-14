@@ -1,1 +1,34 @@
-﻿
+﻿@model ChatApp.ViewModels.GroupChatViewModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Group Chat - @Model.GroupName</title>
+    <link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <a href="@Url.Action("GroupChats", "GroupChat")" class="btn btn-secondary" style="position: absolute; left: 10px; top: 10px;">Back</a>
+            @Model.GroupName
+        </div>
+        <div id="chatBox" class="chat-box">
+            @foreach (var msg in Model.GroupChatMessages)
+            {
+                var isMine = msg.Item2 == Model.UserName;
+                <div class="chat-message @(isMine ? "mine" : "other")">
+                    <p>
+                        <b>@msg.Item2:</b> @msg.Item1.Message
+                    </p>
+                </div>
+            }
+        </div>
+        <div class="input-container">
+            <input type="text" id="messageInput" placeholder="Type a message..." />
+            <button id="sendButton" disabled>Send</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,4 +1,6 @@
-﻿using ChatApp.Models;
+﻿using ChatApp.DTOs;
+using ChatApp.Mappers;
+using ChatApp.Models;
 using ChatApp.Repositories;
 using ChatApp.ViewModels;
 
@@ -13,27 +15,29 @@ namespace ChatApp.Services
             _groupChatRepository = groupChatRepository;
             _userService = userService;
         }
-        public async Task<GroupChatViewModel> GetGroupChat(int groupId)
+        public async Task<GroupChatViewModel> GetGroupChat(string userId, int groupId)
         {
             GroupChat groupChat = await _groupChatRepository.GetGroup(groupId);
             List<GroupChatMember> groupMembers = await _groupChatRepository.GetGroupMembers(groupId);
             List<GroupChatMessage> groupMessages = await _groupChatRepository.GetGroupMessages(groupId);
 
-            List<Tuple<GroupChatMessage, string>> messages = new List<Tuple<GroupChatMessage, string>>();
+            List<GroupChatMessageDTO> messages = new List<GroupChatMessageDTO>();
             foreach(GroupChatMessage message in groupMessages) 
             {
-                Tuple<string, string> userName = await _userService.GetUserName(message.SenderId);
-                messages.Add(new Tuple<GroupChatMessage, string>(message, userName.Item1 + " " + userName.Item2));
+                UserDTO userDTO = await _userService.GetUser(message.SenderId);
+                GroupChatMessageDTO messageDTO = GroupChatMessageMapper.ToDTO(message, userDTO);
+                messages.Add(messageDTO);
             }
 
-            List<Tuple<string, string>> members = new List<Tuple<string, string>>();
+            List<UserDTO> members = new List<UserDTO>();
             foreach(GroupChatMember member in groupMembers)
             {
-                Tuple<string, string> userName = await _userService.GetUserName(member.UserId);
-                members.Add(new Tuple<string, string>(member.UserId, userName.Item1 + " " + userName.Item2));
+                UserDTO user = await _userService.GetUser(member.UserId);
+                members.Add(user);
             }
 
-            Tuple<string, string> ownerName = await _userService.GetUserName(groupChat.OwnerId);
+            string ownerFullName = await _userService.GetUserFullName(groupChat.OwnerId);
+            string myFullName = await _userService.GetUserFullName(userId);
 
             GroupChatViewModel groupChatViewModel = new GroupChatViewModel()
             {
@@ -41,9 +45,9 @@ namespace ChatApp.Services
                 GroupMembers = members,
                 GroupName = groupChat.Name,
                 GroupOwnerId = groupChat.OwnerId,
-                GroupOwnerName = ownerName.Item1 + " " + ownerName.Item2
+                GroupOwnerName = ownerFullName,
+                UserName = myFullName
             };
-
             return groupChatViewModel;
         }
         public async Task<List<GroupChatsViewModel>> GetGroupChats(string userId)
@@ -54,13 +58,13 @@ namespace ChatApp.Services
             {
                 GroupChat groupChat = await _groupChatRepository.GetGroup(groupId);
                 GroupChatMessage lastMessage = await _groupChatRepository.GetGroupLastMessage(groupId);
-                Tuple<string, string> lastMessageSenderName = await _userService.GetUserName(lastMessage.SenderId);
+                string lastMessageSenderName = await _userService.GetUserFullName(lastMessage.SenderId);
                 GroupChatsViewModel groupChatsViewModel = new GroupChatsViewModel()
                 {
                     GroupId = groupId,
                     GroupName = groupChat.Name,
                     LastMessage = lastMessage.Message,
-                    LastMesasageSenderName = lastMessageSenderName.Item1 + " " + lastMessageSenderName.Item2
+                    LastMessageSenderName = lastMessageSenderName
                 };
                 groupChatsViewModels.Add(groupChatsViewModel);
             }

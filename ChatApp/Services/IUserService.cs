@@ -1,11 +1,13 @@
-﻿using ChatApp.ViewModels;
+﻿using ChatApp.DTOs;
+using ChatApp.ViewModels;
 
 namespace ChatApp.Services
 {
     public interface IUserService
     {
-        public Task<Tuple<string, string>> GetUserName(string userId);
-        public Task<UserViewModel> GetUser(string userId);
-        public Task<ViewUserViewModel> GetUserView(string myId, string userId);
+        public Task<UserDTO> GetUser(string userId);
+        public Task<UserViewModel> GetUserViewModel(string userId);
+        public Task<ViewUserViewModel> GetViewUserViewModel(string myId, string userId);
+        public Task<string> GetUserFullName(string userId);
     }
 }

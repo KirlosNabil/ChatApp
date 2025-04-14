@@ -1,4 +1,6 @@
-﻿using ChatApp.Models;
+﻿using ChatApp.DTOs;
+using ChatApp.Mappers;
+using ChatApp.Models;
 using ChatApp.Repositories;
 using ChatApp.ViewModels;
 using Microsoft.AspNetCore.Identity;
@@ -14,39 +16,30 @@ namespace ChatApp.Services
             _userRepository = userRepository;
             _friendService = friendService;
         }
-        public async Task<Tuple<string, string>> GetUserName(string userId)
+        public async Task<UserDTO> GetUser(string userId)
         {
             User user = await _userRepository.GetUserById(userId);
-            Tuple<string, string> name = new Tuple<string, string>(user.FirstName, user.LastName);
-            return name;
+            UserDTO userDTO = UserMapper.ToDTO(user);
+            return userDTO;
         }
-        public async Task<UserViewModel> GetUser(string userId)
+        public async Task<UserViewModel> GetUserViewModel(string userId)
         {
             User user = await _userRepository.GetUserById(userId);
-            UserViewModel userViewModel = new UserViewModel()
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                ProfilePicturePath = user.ProfilePicturePath
-            };
+            UserViewModel userViewModel = UserMapper.ToViewModel(user);
             return userViewModel;
         }
-        public async Task<ViewUserViewModel> GetUserView(string myId, string userId)
+        public async Task<ViewUserViewModel> GetViewUserViewModel(string myId, string userId)
         {
             User user = await _userRepository.GetUserById(userId);
             List<UserViewModel> mutualFriends = await _friendService.GetMutualFriends(myId, userId);
             UserRelation relation = await _friendService.GetUserRelation(myId, userId);
-            ViewUserViewModel viewUserViewModel = new ViewUserViewModel()
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                ProfilePicturePath = user.ProfilePicturePath,
-                Relation = relation,
-                MutualFriends = mutualFriends
-            };
+            ViewUserViewModel viewUserViewModel = UserMapper.ToViewUserViewModel(user, mutualFriends, relation);
             return viewUserViewModel;
+        }
+        public async Task<string> GetUserFullName(string userId)
+        {
+            string userFullName = await _userRepository.GetUserFullNameById(userId);
+            return userFullName;
         }
     }
 }

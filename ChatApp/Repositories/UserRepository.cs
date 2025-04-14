@@ -42,5 +42,10 @@ namespace ChatApp.Repositories
             List<User> users = await query.ToListAsync();
             return users;
         }
+        public async Task<string> GetUserFullNameById(string userId)
+        {
+            var user = await _dbContext.Users.Where(u => u.Id == userId).Select(u => new { u.FirstName, u.LastName }).FirstOrDefaultAsync();
+            return $"{user.FirstName} {user.LastName}";
+        }
     }
 }

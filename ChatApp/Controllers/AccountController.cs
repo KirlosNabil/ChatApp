@@ -115,7 +115,7 @@ namespace ChatApp.Controllers
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            UserViewModel userViewModel = await _userService.GetUser(userId);
+            UserViewModel userViewModel = await _userService.GetUserViewModel(userId);
             return View(userViewModel);
         }
         [HttpGet]
