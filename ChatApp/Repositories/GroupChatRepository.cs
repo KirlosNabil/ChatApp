@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using ChatApp.Data;
 using ChatApp.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Repositories
 {
@@ -64,14 +65,35 @@ namespace ChatApp.Repositories
             GroupChat groupChat = _dbContext.GroupChats.FirstOrDefault(g => g.Id == Id);
             return groupChat;
         }
-        public async Task<GroupChatMember> GetGroupMember(int Id)
+        public async Task<GroupChatMember> GetMember(string Id)
         {
-            GroupChatMember groupChatMember = _dbContext.GroupChatMembers.FirstOrDefault(m => m.Id == Id);
+            GroupChatMember groupChatMember = _dbContext.GroupChatMembers.FirstOrDefault(u => u.UserId == Id);
             return groupChatMember;
         }
-        public async Task<GroupChatMessage> GetGroupMessage(int Id)
+        public async Task<GroupChatMessage> GetMessage(int Id)
         {
             GroupChatMessage groupChatMessage = _dbContext.GroupChatMessages.FirstOrDefault(m => m.Id == Id);
+            return groupChatMessage;
+        }
+        public async Task<List<GroupChatMember>> GetGroupMembers(int Id)
+        {
+            List<GroupChatMember> groupChatMembers = await _dbContext.GroupChatMembers.Where(m => m.GroupId == Id).ToListAsync();
+            return groupChatMembers;
+        }
+        public async Task<List<GroupChatMessage>> GetGroupMessages(int Id)
+        {
+            List<GroupChatMessage> groupChatMessages = await _dbContext.GroupChatMessages.Where(m => m.GroupId == Id).ToListAsync();
+            return groupChatMessages;
+        }
+        public async Task<List<int>> GetUserGroupsIds(string userId)
+        {
+            List<int> groupsIds = await _dbContext.GroupChatMembers.Where(u => u.UserId == userId).Select(g => g.GroupId).ToListAsync();
+            return groupsIds;
+        }
+        public async Task<GroupChatMessage> GetGroupLastMessage(int groupId)
+        {
+            GroupChatMessage groupChatMessage = await _dbContext.GroupChatMessages.Where(m => m.GroupId == groupId)
+                .OrderByDescending(d => d.Date).FirstOrDefaultAsync();
             return groupChatMessage;
         }
     }

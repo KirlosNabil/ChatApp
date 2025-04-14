@@ -14,18 +14,17 @@ namespace ChatApp.Controllers
         }
         public async Task<IActionResult> GroupChat(int groupId)
         {
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            GroupChatViewModel groupChatViewModel = await _groupChatService.GetGroupChat(groupId);
 
-
-
-            return View();
+            return View(groupChatViewModel);
         }
-        public async Task<IActionResult> Chats()
+        public async Task<IActionResult> GroupChats()
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            List<GroupChatsViewModel> groupChats = await _groupChatService.GetGroupChats(userId);
 
-            return View();
+            return View(groupChats);
         }
     }
 }

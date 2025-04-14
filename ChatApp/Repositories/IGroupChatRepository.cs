@@ -14,7 +14,11 @@ namespace ChatApp.Repositories
         public Task DeleteGroupMember(int Id);
         public Task DeleteGroupMessage(int Id);
         public Task<GroupChat> GetGroup(int Id);
-        public Task<GroupChatMember> GetGroupMember(int Id);
-        public Task<GroupChatMessage> GetGroupMessage(int Id);
+        public Task<GroupChatMember> GetMember(string Id);
+        public Task<GroupChatMessage> GetMessage(int Id);
+        public Task<List<GroupChatMember>> GetGroupMembers(int Id);
+        public Task<List<GroupChatMessage>> GetGroupMessages(int Id);
+        public Task<List<int>> GetUserGroupsIds(string userId);
+        public Task<GroupChatMessage> GetGroupLastMessage(int groupId);
     }
 }
