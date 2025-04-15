@@ -27,6 +27,12 @@ namespace ChatApp.Hubs
                 if (userId != null)
                 {
                     _connectedUsers.GetOrAdd(userId, _ => new List<string>()).Add(Context.ConnectionId);
+
+                    List<int> groupIds = await _groupChatService.GetUserGroupsIds(userId);
+                    foreach(int groupId in groupIds)
+                    {
+                        await Groups.AddToGroupAsync(Context.ConnectionId, $"group-{groupId}");
+                    }
                 }
             }
             catch (Exception ex) { }
@@ -44,6 +50,12 @@ namespace ChatApp.Hubs
                     {
                         _connectedUsers.TryRemove(userId, out _);
                     }
+
+                    List<int> groupIds = await _groupChatService.GetUserGroupsIds(userId);
+                    foreach(int groupId in groupIds)
+                    {
+                        await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"group-{groupId}");
+                    }
                 }
             }
             catch (Exception ex) { }
@@ -55,19 +67,8 @@ namespace ChatApp.Hubs
             {
                 string userId = Context.UserIdentifier;
 
-                ChatMessageDTO chatMessageDTO = await _chatService.SendMessage(userId, receiverId, message);
-
-                if (_connectedUsers.ContainsKey(receiverId))
-                {
-                    await _chatService.MarkMessageAsDelivered(chatMessageDTO.MessageId);
-                    chatMessageDTO.IsDelivered = true;
-
-                    await Clients.User(receiverId).SendAsync("ReceiveMessage", chatMessageDTO);
-                }
-                if (_connectedUsers.ContainsKey(userId))
-                {
-                    await Clients.User(userId).SendAsync("ReceiveMessage", chatMessageDTO);
-                }
+                GroupChatMessageDTO groupChatMessageDTO = await _groupChatService.SendGroupMessage(userId, groupId, message);
+                await Clients.Group($"group-{groupId}").SendAsync("ReceiveGroupMessage", groupChatMessageDTO);
             }
             catch (Exception ex) { }
         }

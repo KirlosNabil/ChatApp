@@ -64,8 +64,8 @@ namespace ChatApp.Hubs
                 if (_connectedUsers.ContainsKey(receiverId))
                 {
                     await _friendService.UpdateFriendRequestStatus(userId, receiverId, FriendRequestStatus.Pending);
-                    Tuple<string, string> userName = await _userService.GetUser(userId);
-                    await Clients.User(receiverId).SendAsync("NewFriendRequest", userId, userName.Item1, userName.Item2);
+                    string userName = await _userService.GetUserFullName(userId);
+                    await Clients.User(receiverId).SendAsync("NewFriendRequest", userId, userName);
                 }
             }
             catch (Exception ex){}
@@ -92,8 +92,8 @@ namespace ChatApp.Hubs
             {
                 if (_connectedUsers.ContainsKey(friendId))
                 {
-                    Tuple<string, string> userName = await _userService.GetUser(userId);
-                    await Clients.User(friendId).SendAsync("FriendOnline", userId, userName.Item1, userName.Item2);
+                    string userName = await _userService.GetUserFullName(userId);
+                    await Clients.User(friendId).SendAsync("FriendOnline", userId, userName);
                 }
             }
         }

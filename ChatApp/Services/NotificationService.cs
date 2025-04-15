@@ -16,8 +16,8 @@ namespace ChatApp.Services
         }
         public async Task<Notification> CreateSentFriendRequestNotification(string senderId, string receiverId)
         {
-            Tuple<string, string> senderName = await _userService.GetUser(senderId);
-            string notificationContent = $"{senderName.Item1} {senderName.Item2} sent you a friend request!";
+            string senderName = await _userService.GetUserFullName(senderId);
+            string notificationContent = $"{senderName} sent you a friend request!";
             Notification notification = new Notification()
             {
                 UserId = receiverId,
@@ -30,8 +30,8 @@ namespace ChatApp.Services
         }
         public async Task<Notification> CreateAcceptedFriendRequestNotification(string senderId, string receiverId)
         {
-            Tuple<string, string> senderName = await _userService.GetUser(senderId);
-            string notificationContent = $"{senderName.Item1} {senderName.Item2} accepted your friend request!";
+            string senderName = await _userService.GetUserFullName(senderId);
+            string notificationContent = $"{senderName} accepted your friend request!";
             Notification notification = new Notification()
             {
                 UserId = receiverId,

@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using ChatApp.DTOs;
+using ChatApp.Mappers;
 using ChatApp.Models;
 using ChatApp.Repositories;
 using ChatApp.ViewModels;
@@ -10,19 +11,19 @@ namespace ChatApp.Services
     public class ChatService : IChatService
     {
         private readonly IChatMessageRepository _chatMessageRepository;
-        private readonly IUserRepository _userRepository;
-        public ChatService(IChatMessageRepository chatMessageRepository, IUserRepository userRepository) 
+        private readonly IUserService _userService;
+        public ChatService(IChatMessageRepository chatMessageRepository, IUserService userService) 
         {
             _chatMessageRepository = chatMessageRepository;
-            _userRepository = userRepository;
+            _userService = userService;
         }
         public async Task<ChatViewModel> GetChat(string userId, string friendId)
         {
-            User friend = await _userRepository.GetUserById(friendId);
+            string friendName = await _userService.GetUserFullName(friendId);
 
             ChatViewModel chat = new ChatViewModel();
             chat.friendId = friendId;
-            chat.friendName = friend.FirstName + " " + friend.LastName;
+            chat.friendName = friendName;
 
             List<ChatMessage> chatMessages = await _chatMessageRepository.GetChatBetweenUsers(userId, friendId);
             foreach (ChatMessage message in chatMessages)
@@ -34,8 +35,7 @@ namespace ChatApp.Services
                 }
                 else
                 {
-                    User sender = await _userRepository.GetUserById(message.SenderId);
-                    senderName = sender.FirstName + " " + sender.LastName;
+                    senderName = await _userService.GetUserFullName(message.SenderId);
                 }
 
                 chat.ChatMessages.Add(new Tuple<ChatMessage, string>(message, senderName));
@@ -51,7 +51,7 @@ namespace ChatApp.Services
             foreach (ChatMessage chat in lastChatMessages)
             {
                 string friendId = (chat.SenderId == userId ? chat.ReceiverId : chat.SenderId);
-                User friend = await _userRepository.GetUserById(friendId);
+                string friendName = await _userService.GetUserFullName(friendId);
 
                 ChatsViewModel chatsViewModel = new ChatsViewModel();
                 if (chat.SenderId == userId)
@@ -60,30 +60,15 @@ namespace ChatApp.Services
                 }
                 else
                 {
-                    chatsViewModel.lastMesasageSenderName = friend.FirstName + " " + friend.LastName;
+                    chatsViewModel.lastMesasageSenderName = friendName;
                 }
                 chatsViewModel.lastMessage = chat.Message;
-                chatsViewModel.friendName = friend.FirstName + " " + friend.LastName;
-                chatsViewModel.friendId = friend.Id;
+                chatsViewModel.friendName = friendName;
+                chatsViewModel.friendId = friendId;
                 chatsViewModel.countUnreadMessages = await _chatMessageRepository.GetUnreadMessagesCount(userId);
                 chats.Add(chatsViewModel);
             }
             return chats;
-        }
-        public async Task<ChatMessageDTO> ChatMessageToDTO(ChatMessage chatMessage)
-        {
-            User sender = await _userRepository.GetUserById(chatMessage.SenderId);
-            ChatMessageDTO chatMessageDTO = new ChatMessageDTO()
-            {
-                MessageId = chatMessage.Id,
-                MessageContent = chatMessage.Message,
-                SenderId = chatMessage.SenderId,
-                SenderFullName = sender.FirstName + " " + sender.LastName,
-                ReceiverId = chatMessage.ReceiverId,
-                IsDelivered = false,
-                IsRead = false
-            };
-            return chatMessageDTO;
         }
         public async Task<ChatMessageDTO> SendMessage(string userId, string receiverId, string message)
         {
@@ -97,7 +82,8 @@ namespace ChatApp.Services
                 IsRead = false
             };
             await _chatMessageRepository.AddChatMessage(newMessage);
-            ChatMessageDTO chatMessageDTO = await ChatMessageToDTO(newMessage);
+            string senderFullName = await _userService.GetUserFullName(userId);
+            ChatMessageDTO chatMessageDTO = ChatMessageMapper.ToDTO(newMessage, senderFullName);
             return chatMessageDTO;
         }
         public async Task MarkMessageAsDelivered(int messageId)

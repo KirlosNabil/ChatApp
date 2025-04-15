@@ -63,6 +63,7 @@ namespace ChatApp
             app.MapHub<ChatHub>("/chatHub");
             app.MapHub<FriendHub>("/friendHub");
             app.MapHub<NotificationHub>("/notificationHub");
+            app.MapHub<GroupChatHub>("/groupChatHub");
 
             app.MapRazorPages();
 

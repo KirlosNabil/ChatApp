@@ -75,7 +75,7 @@ notificationConnection.on("NotifyAcceptedFriendRequest", function (notification,
     }
 });
 
-friendConnection.on("FriendOnline", function (userId, firstName, lastName)
+friendConnection.on("FriendOnline", function (userId, friendName)
 {
     const activeFriendsList = document.getElementById("activeFriendsList");
     if (!document.getElementById(`active-friend-${userId}`))
@@ -85,7 +85,7 @@ friendConnection.on("FriendOnline", function (userId, firstName, lastName)
         friendElement.innerHTML = `
             <div class="friend-container">
                 <div class="friend-info">
-                    <span>${firstName} ${lastName}</span>
+                    <span>${friendName}</span>
                     <div class="online-status">
                         <div class="online-dot"></div>
                         <span>Online</span>

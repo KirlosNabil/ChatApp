@@ -14,6 +14,5 @@ namespace ChatApp.Services
         public Task<List<int>> GetUnreadChatMessagesIds(string userId, string friendId);
         public Task<List<int>> GetSentChatMessagesIds(string userId);
         public Task<ChatMessage> GetMessageById(int messageId);
-        public Task<ChatMessageDTO> ChatMessageToDTO(ChatMessage chatMessage);
     }
 }

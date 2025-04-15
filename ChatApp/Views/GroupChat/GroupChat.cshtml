@@ -17,10 +17,10 @@
         <div id="chatBox" class="chat-box">
             @foreach (var msg in Model.GroupChatMessages)
             {
-                var isMine = msg.Item2 == Model.UserName;
+                var isMine = msg.SenderFullName == Model.UserName;
                 <div class="chat-message @(isMine ? "mine" : "other")">
                     <p>
-                        <b>@msg.Item2:</b> @msg.Item1.Message
+                        <b>@msg.SenderFullName:</b> @msg.MessageContent
                     </p>
                 </div>
             }
@@ -32,3 +32,48 @@
     </div>
 </body>
 </html>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("/groupChatHub")
+            .build();
+
+        connection.on("ReceiveGroupMessage", function (messageDTO) {
+            var chatBox = document.getElementById("chatBox");
+
+            var isMine = messageDTO.senderFullName === "@Model.UserName";
+            var className = isMine ? "mine" : "other";
+
+            chatBox.innerHTML += `
+                <div class="chat-message ${className}">
+                    <p>
+                        <b>${messageDTO.senderFullName}:</b> ${messageDTO.messageContent}
+                    </p>
+                </div>
+            `;
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        connection.start().catch(function (err) {
+            console.error(err.toString());
+        });
+
+        document.getElementById("sendButton").addEventListener("click", function () {
+            var message = document.getElementById("messageInput").value;
+            if (message.trim() === "") return;
+            var groupId = parseInt("@Model.GroupId");
+
+            connection.invoke("SendGroupMessage", groupId, message);
+            document.getElementById("messageInput").value = "";
+            document.getElementById("sendButton").disabled = true;
+        });
+        document.getElementById("messageInput").addEventListener("input", function () {
+            var message = this.value.trim();
+            document.getElementById("sendButton").disabled = message === "";
+        });
+
+    </script>
+}

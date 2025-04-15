@@ -2,6 +2,7 @@
 using System.Reflection;
 using ChatApp.Data;
 using ChatApp.DTOs;
+using ChatApp.Mappers;
 using ChatApp.Models;
 using ChatApp.Repositories;
 using ChatApp.Services;
@@ -14,10 +15,12 @@ namespace ChatApp.Hubs
     public class ChatHub : Hub
     {
         private readonly IChatService _chatService;
+        private readonly IUserService _userService;
         private static ConcurrentDictionary<string, List<string>> _connectedUsers = new ConcurrentDictionary<string, List<string>>();
-        public ChatHub(IChatService chatService)
+        public ChatHub(IChatService chatService, IUserService userService)
         {
             _chatService = chatService;
+            _userService = userService;
         }
         public override async Task OnConnectedAsync()
         {
@@ -94,7 +97,8 @@ namespace ChatApp.Hubs
             {
                 await _chatService.MarkMessageAsDelivered(messageId);
                 ChatMessage message = await _chatService.GetMessageById(messageId);
-                ChatMessageDTO messageDTO = await _chatService.ChatMessageToDTO(message);
+                string senderFullName = await _userService.GetUserFullName(message.SenderId);
+                ChatMessageDTO messageDTO = ChatMessageMapper.ToDTO(message, senderFullName);
 
                 await Clients.User(userId).SendAsync("ReceiveMessage", messageDTO);
 

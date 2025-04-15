@@ -42,6 +42,7 @@ namespace ChatApp.Services
             GroupChatViewModel groupChatViewModel = new GroupChatViewModel()
             {
                 GroupChatMessages = messages,
+                GroupId = groupId,
                 GroupMembers = members,
                 GroupName = groupChat.Name,
                 GroupOwnerId = groupChat.OwnerId,
@@ -69,6 +70,54 @@ namespace ChatApp.Services
                 groupChatsViewModels.Add(groupChatsViewModel);
             }
             return groupChatsViewModels;
+        }
+        public async Task<GroupChatMessageDTO> SendGroupMessage(string userId, int groupId, string message)
+        {
+            GroupChatMessage groupChatMessage = new GroupChatMessage()
+            {
+                Message = message,
+                GroupId = groupId,
+                Date = DateTime.UtcNow,
+                SenderId = userId
+            };
+            await _groupChatRepository.AddGroupMessage(groupChatMessage);
+            UserDTO userDTO = await _userService.GetUser(userId);
+            GroupChatMessageDTO groupChatMessageDTO = GroupChatMessageMapper.ToDTO(groupChatMessage, userDTO);
+            return groupChatMessageDTO;
+        }
+        public async Task<List<int>> GetUserGroupsIds(string userId)
+        {
+            List<int> groupsIds = await _groupChatRepository.GetUserGroupsIds(userId);
+            return groupsIds;
+        }
+        public async Task CreateGroupChat(string userId, CreateGroupChatViewModel model)
+        {
+            GroupChat groupChat = new GroupChat()
+            {
+                Name = model.Name,
+                CreationDate = DateTime.UtcNow,
+                OwnerId = userId
+            };
+            await _groupChatRepository.AddGroup(groupChat);
+            model.Members.Add(userId);
+            foreach(string memberId in model.Members)
+            {
+                GroupChatMember groupChatMember = new GroupChatMember()
+                {
+                    UserId = memberId,
+                    GroupId = groupChat.Id
+                };
+                await _groupChatRepository.AddGroupMember(groupChatMember);
+            }
+            string userName = await _userService.GetUserFullName(userId);
+            GroupChatMessage newGroupStartMessage = new GroupChatMessage()
+            {
+                Message = $"created this group!",
+                Date = DateTime.UtcNow,
+                SenderId = userId,
+                GroupId = groupChat.Id
+            };
+            await _groupChatRepository.AddGroupMessage(newGroupStartMessage);
         }
     }
 }
